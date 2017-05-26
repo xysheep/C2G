@@ -42,15 +42,60 @@ axis([-5 15 -5 15 -5 15]);
 % parameter in "C2G".
 
 % Precluster the simulated data
-preclustered_label = cluster_ungated(data,label);
+preclustered_label = cluster_ungated_gmm(data,label);
+figure('Position',[680 478 560 420]);
+col = [0.8 0.8 0.8;hsv(length(unique(preclustered_label)))];
+scatter3(data(:,1),data(:,2),data(:,3),1,col(preclustered_label+1,:));
+xlabel('Marker 1')
+ylabel('Marker 2')
+zlabel('Marker 3')
+axis([-5 15 -5 15 -5 15]);
 % Pre-compute the local density (optional)
-density = compute_density(data,preclustered_label); 
+[means, covs, density] = compute_density(data,preclustered_label); 
+
+
 % Call main part of the program and return a object m that store the
 % results. The option "ignore_ratio" mean percentage of low density cells
 % ignored when compute overlap between different populations
-m = C2G(data,preclustered_label,label,density,'ignore_ratio',0.2); 
+m = C2G(data,preclustered_label,label,means,covs,density,'ignore_ratio',0.2,'markernames',markernames,'color',col); 
 % Draw the obtained gating hierarchy
 m.visulize_gating_sequence(data,markernames,1,0); 
 % Show statistics
 outtable = m.show_f_score(label); 
 
+%% Load CYTOF datasets
+% Read multiple fcs files. Each fcs file correspond to one cell population
+% Automatically generate cell labels based on fsc files. FCS files are
+% store in the "test" folder. "CD4_Effmen.fcs", "CD4_naive.fcs", and
+% "CD8_naive.fcs" are cells of target populations and "ctr.fcs" contain all
+% cells. Only work with surface protein markers. 
+fdname = 'testdata';
+[ori_data,ori_l,ori_markers]=load_mul_fcs(fdname,'ctr.fcs');
+
+surface_idx = [3 4 6 8 9 11 12 13 22 24 25 27];
+data = ori_data(:,surface_idx);
+markers = ori_markers(surface_idx);
+n_markers = length(markers);
+
+%% Generate gating hierarchy for manually gated populations
+% Precluster the ungated cells
+label = cluster_ungated_gmm(data,ori_l);
+% Precompute the local density
+[means, covs, density] = compute_density(data,label);
+% Perform the anlysis
+m = C2G(data,label,ori_l,means,covs,density);
+m.visulize_gating_sequence(data,markers,2,0);
+m.show_f_score(ori_l);
+
+%% Generate gating hierarchy for K-means defined populations (K=10)
+rng(9464)
+km_l = kmeans(data,10);
+% Precluster the ungated cells
+label = cluster_ungated_gmm(data,km_l);
+new_km_l = km_l;
+% Precompute the local density
+[means, covs, density] = compute_density(data,label);
+% Perform the anlysis
+m = C2G(data,label,new_km_l,means,covs,density,'ignore_ratio',0.2);
+m.visulize_gating_sequence(data,markers,4,100);
+m.show_f_score(new_km_l);

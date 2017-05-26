@@ -1,11 +1,11 @@
-function [gated_labels,main_members,ignore_perc,boundaries,flag,adj] = new_bestgate(x,y,label,ori_label,ori_main_members,density,ig_ratio)
+function [gated_labels,main_members,ignore_perc,boundaries,flag,adj] = new_bestgate(x,y,label,ori_label,ori_main_members,density,ig_ratio,means,covs,d12)
 
 
 %% Overlap between different populations
 % Implement this part in C++/ vectorization 
-[adj,~,all_labels] = pop_overlap(x,y,label,density,ig_ratio); 
-
-
+%[adj,~,all_labels] = pop_overlap(x,y,label,density,ig_ratio); 
+[adj,all_labels] = gaussian_pop_overlap(means,covs,label,d12); 
+%adj(adj<0.5) = 0;
 %adj;
 m = mcl(adj);
 % figure;imagesc(adj);

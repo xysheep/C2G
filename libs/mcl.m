@@ -10,10 +10,10 @@ end
 
 
 p = 2;
-minval = 0.0001;
+minval = 0.00001;
 
 %e = 1.;
-emax = 0.001;
+emax = 0.0001;
 origin_m = m;
 while 1
     m = origin_m;

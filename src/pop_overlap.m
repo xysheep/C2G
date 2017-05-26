@@ -30,3 +30,4 @@ adj = adj + adj' - eye(length(all_labels));
 %areas = areas + areas' - eye(length(all_labels));
 adj(isnan(adj))=0;
 %adj(isnan(areas))=0;
+

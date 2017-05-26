@@ -1,4 +1,4 @@
-function T = C2G(d,l,ori_l,density,varargin)%ig_ratio,markernames,col)
+function T = C2G(d,l,ori_l,means,covs,density,varargin)%ig_ratio,markernames,col)
 % C2G perform the analysis return a gatingTree object that store the
 % obtained gating hierarchy.
 %       T = C2G(d,l,ori_l,...) "d" is the M-by-N data matrix where M is the
@@ -68,11 +68,11 @@ while ~queue.isempty()
                 %tic
                 %fprintf('i=%2d\tj=%2d\t',i,j);
                 
-                
+                d12 = [i j];
                 [gatelabels,main_members,ignore_perc,boundary,flag_seperate,over_matrix] = ...
                     new_bestgate(sub_d(:,i),sub_d(:,j),...
                     sub_l,unique(sub_ori_l),T.main_member{node_id},...
-                    density(cells_idx,i,j),ig_ratio);
+                    density(cells_idx,i,j),ig_ratio,means,covs,d12);
                 
                 entropy = new_entropy_gate(sub_ori_l,gatelabels);
                 %fprintf('used_clucster = %d\tentropy=%.2f\n',length(gatelabels),entropy);

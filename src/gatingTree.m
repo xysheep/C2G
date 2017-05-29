@@ -1,11 +1,11 @@
 classdef gatingTree < handle
 %% This object is used to record gating hierarchy of flow cytometry data
     properties
-        cell_idx = {[]}% index of cells in this gate
-        dimpair = {[]}
-        ignore_perc = {[]}
+        cell_label = {[]}% index of cells in this gate
+        cell_idx = {[]}
         boundary = {[]}
-        main_member = {[]}% labels of cells that are true positive in this gate
+        dimpair = {[]}
+        ignore_perc = []
         numNode = 1;
         parents    % node_id of last gate. 0 means all data
         buffersize = 10;% avoid change the buffer size in each loop
@@ -22,18 +22,19 @@ classdef gatingTree < handle
 %
 %%  Functions associated with this object
     methods
-        function obj = gatingTree(num_cells,labels, buffersize)
+        function obj = gatingTree(all_label, numcell, buffersize)
             % Pre-assign 100 node to the tree; If Number of node exceed the
             % buffersize, double the buffersize.
-            if nargin > 1 
+            if nargin > 2 
                 obj.buffersize = buffersize;
             end
-            obj.cell_idx = {1:num_cells};
-            obj.main_member = {labels(labels~=0)};
-            obj.ignore_perc = {0};
+            if nargin > 1
+                obj.cell_idx = {1:numcell};
+            end
+            obj.cell_label{1} = all_label;
             obj.parents = zeros(1,obj.buffersize);
         end
-        function obj = addnode(obj,parent,cells,main_members,ignore_perc,boundary)
+        function obj = addnode(obj,parent, cell_labels)
             if obj.numNode == obj.buffersize
             % If Number of nodes close to the buffersize, double the
             % buffersize
@@ -41,10 +42,20 @@ classdef gatingTree < handle
                 obj.parents = [obj.parents zeros(1,obj.numNode)];
             end
             obj.parents(obj.numNode+1) = parent;
-            obj.cell_idx{obj.numNode+1} = cells;
-            obj.dimpair{obj.numNode+1} = [];
-            obj.main_member{obj.numNode+1} = main_members;
-            obj.ignore_perc{obj.numNode+1} = ignore_perc;
+            obj.cell_label{obj.numNode+1} = cell_labels;
+            obj.numNode = obj.numNode +1;
+        end
+        function obj = addnode1(obj,parent, cell_idx, cell_labels, ignore, boundary)
+            if obj.numNode == obj.buffersize
+            % If Number of nodes close to the buffersize, double the
+            % buffersize
+                obj.buffersize = obj.buffersize * 2;
+                obj.parents = [obj.parents zeros(1,obj.numNode)];
+            end
+            obj.parents(obj.numNode+1) = parent;
+            obj.cell_idx{obj.numNode+1} = cell_idx;
+            obj.cell_label{obj.numNode+1} = cell_labels;
+            obj.ignore_perc(obj.numNode+1) = ignore;
             obj.boundary{obj.numNode+1} = boundary;
             obj.numNode = obj.numNode +1;
         end
@@ -81,7 +92,48 @@ classdef gatingTree < handle
             text(x(:,1), y(:,1), name1, ...
                 'VerticalAlignment','bottom','HorizontalAlignment','right','FontSize',20)
         end
-        function visulize_gating_sequence(obj,data,markers,n_lines,small_cluster,fontsize)
+        function draw_gates(obj,data,label,density)
+            for i_node = 2:obj.numNode
+                pid = obj.parents(i_node);
+                idx = obj.cell_idx{pid};
+                x = data(idx,obj.dimpair{pid}(1));
+                y = data(idx,obj.dimpair{pid}(2));
+                dens2d = density(:,obj.dimpair{pid}(1),obj.dimpair{pid}(2));
+                subl = label(idx,:);
+                unil = unique(obj.cell_label{i_node});unil(unil==0) = [];
+                boundariesx = [];
+                boundariesy = [];
+                idx_cell = cell(length(unil),1);
+                for i = 1:length(unil)
+                    xg = x(subl == unil(i));
+                    yg = y(subl == unil(i));
+                    %fprintf('xg: %d\tyg %d\n',length(xg),length(yg));
+                    %[boundaryx,boundaryy] = findboundary(xg,yg);
+%                     figure
+%                     hold on
+%                     plot(boundaryx,boundaryy)
+                    [boundaryx,boundaryy] = findboundary_outliers(xg,yg,dens2d(subl == unil(i)),0.2);
+%                     plot(boundaryx,boundaryy)
+%                     plot(mean(xg),mean(yg),'o','markersize',20);
+%                     plotdensity(xg,yg,dens2d(subl == unil(i)))
+%                     title(sprintf('selected %d\t origin %d\n',length(select_idx), length(xg)));
+                    if length(boundaryx) > 2 % At least 3 points to be a polygon
+                        in_idx = inpolygon(x,y,boundaryx,boundaryy);
+                        fprintf('Node: %d\t Cluster: %d\t Cells: %d\n',i_node,unil(i),sum(in_idx));
+                        idx_cell{i} = reshape(idx(in_idx), numel(idx(in_idx)),1);
+                        if isempty(boundariesy)
+                            boundariesx = boundaryx;
+                            boundariesy = boundaryy;
+                        else
+                            [boundariesx,boundariesy] = polybool('union',boundariesx,boundariesy,boundaryx,boundaryy);
+                        end
+                    end                   
+                end
+                obj.cell_idx{i_node} = unique(cell2mat(idx_cell));
+                obj.boundary{i_node} = [boundariesx,boundariesy]; 
+            end
+        end
+        function view_gates(obj,data,markers,fontsize,n_lines)
             if ~exist('n_lines','var')
                 n_lines = 2;
             end
@@ -91,41 +143,12 @@ classdef gatingTree < handle
             if isempty(markers)
                 markers =  strread(num2str(1:size(data,2)),'%s');
             end
-            node_can_show = find(~cellfun(@isempty,obj.dimpair));
-            % Condition some figures not shown:
-            % 1. Only one gate drawn on this step
-            % 2. The only drawn gate only exclude small clusters (defined
-            % by variable "small_clusters"
-            node_to_show = node_can_show;
-            if exist('small_cluster','var')
-                for n_i = length(node_to_show):-1:1
-                    if length(find(obj.parents==node_to_show(n_i)))==1
-                        self_i = node_to_show(n_i);
-                        child_i = find(obj.parents==node_to_show(n_i),1);
-                        n_exclude = length(obj.cell_idx{self_i})-length(obj.cell_idx{child_i});
-                        if n_exclude < small_cluster
-                            node_to_show(n_i) = [];
-                        end
-                    end
-                end
-            end
+            node_to_show = find(~cellfun(@isempty,obj.dimpair));
             figure;
             set(gcf,'Position',[100,100,320*ceil(length(node_to_show)/n_lines),320*n_lines])
-            flag = 0;
             for n_i = 1:length(node_to_show)
+                subplot(n_lines,ceil(length(node_to_show)/n_lines),n_i);
                 n_id = node_to_show(n_i);
-                if n_lines> 7 && n_i > length(node_to_show)/2
-                    if flag == 0
-                        figure;
-                        set(gcf,'Position',[100,100,1200,600])
-                        flag = 1;
-                    end
-                    subplot(ceil(n_lines/2),ceil(length(node_to_show)/n_lines),n_i - floor(length(node_to_show)/2));
-                elseif n_lines> 7
-                    subplot(ceil(n_lines/2),ceil(length(node_to_show)/n_lines),n_i);
-                else
-                    subplot(n_lines,ceil(length(node_to_show)/n_lines),n_i);
-                end
                 title(sprintf('Node %d',n_id),'FontSize',fontsize);
                 sub_d = data(obj.cell_idx{n_id},:);
                 %disp(obj.dimpair{n_id})
@@ -137,14 +160,8 @@ classdef gatingTree < handle
                 gate_mem = find(obj.parents == n_id);
                 for g_id = gate_mem
                     %disp(g_id)
-                    if isempty(obj.boundary{g_id})% || isequal(obj.boundary{g_id},0)
-                        xg = data(obj.cell_idx{g_id},i);
-                        yg = data(obj.cell_idx{g_id},j);
-                        [boundaryx,boundaryy] = findboundary(xg,yg); 
-                    else
-                        boundaryx = obj.boundary{g_id}(:,1);
-                        boundaryy = obj.boundary{g_id}(:,2);
-                    end
+                    boundaryx = obj.boundary{g_id}(:,1);
+                    boundaryy = obj.boundary{g_id}(:,2);
                     plot(boundaryx,boundaryy,'r','LineWidth',2);
                     t=text(mean(boundaryx),mean(boundaryy),sprintf('Node %d',g_id),'HorizontalAlignment','center');
                     t.FontSize = fontsize;
@@ -161,7 +178,7 @@ classdef gatingTree < handle
             outtable = zeros(length(unique(label))-1,6);
             k = 0;
             for i = 1:length(leaf_idx)
-                tar_pop = obj.main_member{leaf_idx(i)};
+                tar_pop = obj.cell_label{leaf_idx(i)};
                 tar_pop = tar_pop(ismember(tar_pop,unique(label)));
                 for j = 1:length(tar_pop)
                     k=k+1;

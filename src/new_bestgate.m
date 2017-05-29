@@ -1,21 +1,22 @@
-function [gated_labels,main_members,ignore_perc,boundaries,flag,adj] = new_bestgate(x,y,label,ori_label,ori_main_members,density,ig_ratio,means,covs,d12)
+function [gated_labels,main_members,ignore_perc,boundaries,flag,adj] = new_bestgate(x,y,label,ori_label,ori_main_members,density,ig_ratio)
 
 
 %% Overlap between different populations
 % Implement this part in C++/ vectorization 
-%[adj,~,all_labels] = pop_overlap(x,y,label,density,ig_ratio); 
-[adj,all_labels] = gaussian_pop_overlap(means,covs,label,d12); 
-%adj(adj<0.5) = 0;
-%adj;
-m = mcl(adj);
-% figure;imagesc(adj);
-% figure;imagesc(m);
-%sum(sum(m,2)>=1)
-m = round(m,3);
+[adj,all_labels] = pop_overlap(x,y,label,density,ig_ratio,ori_label); 
+%[adj,overlap,all_labels] = gaussian_pop_overlap(means,covs,label,d12); 
 
+% %adj;
+% m = mcl(adj);
+% % figure;imagesc(adj);
+% % figure;imagesc(m);
+% %sum(sum(m,2)>=1)
+% m = round(m,3);
+m = cluster(-log(adj+max(0.0001,min(adj(:)))*0.01));
 gates = zeros(size(label));
 for i = 1:length(all_labels)
-    [~,gates(label==all_labels(i))] = max(m(:,i));
+    %[~,gates(label==all_labels(i))] = max(m(:,i));
+    gates(label==all_labels(i)) = m(i);
     % cell and gate label are not necessary related. They are just index of
     % different things
 end

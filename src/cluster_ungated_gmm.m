@@ -1,4 +1,4 @@
-function newlabel = cluster_ungated_gmm(data, label, maxn)
+function newlabel = cluster_ungated_gmm(data, label, maxn, minn)
 if sum(label==0) == 0
     newlabel = label;
     return
@@ -9,7 +9,14 @@ if exist('maxn','var')
         n = maxn;
     end
 end
+if exist('minn','var')
+    if n < minn
+        n = minn;
+    end
+end
 newlabel = label;
 
-gmmfit = fitgmdist(data(label==0,:),n);
-newlabel(label==0) = max(label) + cluster(gmmfit,data(label==0,:));
+%gmmfit = fitgmdist(data(label==0,:),n);
+%newlabel(label==0) = max(label) + cluster(gmmfit,data(label==0,:));
+gmmfit = kmeans(data(label==0,:),n);
+newlabel(label==0) = max(label) + gmmfit;

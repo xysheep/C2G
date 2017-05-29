@@ -1,4 +1,4 @@
-function T = C2G(d,l,ori_l,means,covs,density,varargin)%ig_ratio,markernames,col)
+function T = C2G(d,l,ori_l,density,varargin)%ig_ratio,markernames,col)
 % C2G perform the analysis return a gatingTree object that store the
 % obtained gating hierarchy.
 %       T = C2G(d,l,ori_l,...) "d" is the M-by-N data matrix where M is the
@@ -29,7 +29,7 @@ dflts  = { 0.05          ,[]           ,[]};
 
 queue = CQueue();
 queue.push(1);
-T = gatingTree(length(l),unique(l),4);
+T = gatingTree(unique(l),length(l),4);
 step = 2;
 % T is the object representing the tree of gating hierachy
 while ~queue.isempty()
@@ -51,7 +51,7 @@ while ~queue.isempty()
         sub_l = l(cells_idx);
         %sub_l(~ismember(sub_l,T.main_member{node_id})) = 0;
         sub_ori_l = ori_l(cells_idx);
-        sub_ori_l(~ismember(sub_ori_l,T.main_member{node_id})) = 0;
+        sub_ori_l(~ismember(sub_ori_l,T.cell_label{node_id})) = 0;
         %fprintf('Perfect Entropy is %.2f\n',perfect_entropy);
         % Reason for above command: If one gate is drawn to include a
         % certain target population,this gate can still include some cells
@@ -68,14 +68,13 @@ while ~queue.isempty()
                 %tic
                 %fprintf('i=%2d\tj=%2d\t',i,j);
                 
-                d12 = [i j];
                 [gatelabels,main_members,ignore_perc,boundary,flag_seperate,over_matrix] = ...
                     new_bestgate(sub_d(:,i),sub_d(:,j),...
-                    sub_l,unique(sub_ori_l),T.main_member{node_id},...
-                    density(cells_idx,i,j),ig_ratio,means,covs,d12);
+                    sub_l,unique(sub_ori_l),T.cell_label{node_id},...
+                    density(cells_idx,i,j),ig_ratio);
                 
                 entropy = new_entropy_gate(sub_ori_l,gatelabels);
-                %fprintf('used_clucster = %d\tentropy=%.2f\n',length(gatelabels),entropy);
+                %fprintf('Step:%d\ti:%d\tj:%d\tentropy=%.2f\n',2-step,i,j,entropy);
                 %toc
                 n_gates = length(gatelabels);exclude_cells=0;
                 if n_gates ==1
@@ -186,10 +185,10 @@ while ~queue.isempty()
 %         end
         
         if length(best_pair)>1
-            %fprintf('[Selected] i = %d\tj=%d\n',best_pair(1),best_pair(2));
+            fprintf('[Selected] i = %d\tj=%d\n',best_pair(1),best_pair(2));
             T.setdim(node_id,best_pair);
             for i_gate=1:length(best_gatelabels)
-                T.addnode(node_id,cells_idx(best_gatelabels{i_gate}),...
+                T.addnode1(node_id,cells_idx(best_gatelabels{i_gate}),...
                     best_mainmem{i_gate},best_igperc{i_gate},best_boundary{i_gate});
                 queue.push(T.numNode);
             end

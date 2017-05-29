@@ -1,4 +1,4 @@
-function [adj,all_labels] = gaussian_pop_overlap(means,covs,label,d12,tog_exp)
+function [adj,overlap,all_labels] = gaussian_pop_overlap(means,covs,label,d12)
 all_labels = unique(label);
 all_labels(all_labels==0 | histc(label,all_labels)<1) = [];
 % boundaryx = cell(length(all_labels),1);
@@ -41,7 +41,6 @@ for i = 1:length(all_labels)
         adj(j,i) = adj(i,j);
     end
 end
-if ~exist('tog_exp','var')
-    adj = exp(-adj);
-end
+overlap = adj;
+adj = exp(-adj);
 

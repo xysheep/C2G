@@ -1,4 +1,4 @@
-function [boundaryx,boundaryy] = findboundary_outliers(ori_xg,ori_yg,density,threshold)
+function [boundaryx,boundaryy,select_idx] = findboundary_outliers(ori_xg,ori_yg,density,threshold)
 %% Function findboundary
 % This function is used to estimate boundary of a set of data in 2D
 % Compared to directly compute convex hull, this function consider the

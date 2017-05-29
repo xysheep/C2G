@@ -1,4 +1,4 @@
-function new_labels = cluster_ungated(data,l,threshold,outliers_level)
+function [new_labels,label_feature] = cluster_ungated(data,l,threshold,outliers_level)
 %% Function description
 % This function is used to cluster ungated cells based their overlap with
 % kown target populations. The returned cells labeled 0 in original labels
@@ -78,6 +78,7 @@ end
 ungated_in_range = in_range(l==0,:); % choose all ungated cells
 [~,~,ic] = unique(ungated_in_range,'rows');
 unique_pattern = unique(ic);
+label_feature = ungated_in_range(ic,:);
 freq_pattern = histc(ic,unique_pattern);
 sorted_freq_pattern = sort(freq_pattern,1,'descend');
 total_cells = size(ungated_in_range,1);

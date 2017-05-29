@@ -42,6 +42,7 @@ axis([-5 15 -5 15 -5 15]);
 % parameter in "C2G".
 
 % Precluster the simulated data
+rng(9464);
 preclustered_label = cluster_ungated_gmm(data,label);
 figure('Position',[680 478 560 420]);
 col = [0.8 0.8 0.8;hsv(length(unique(preclustered_label)))];
@@ -50,17 +51,17 @@ xlabel('Marker 1')
 ylabel('Marker 2')
 zlabel('Marker 3')
 axis([-5 15 -5 15 -5 15]);
+
 % Pre-compute the local density (optional)
 [means, covs, density] = compute_density(data,preclustered_label); 
-
-
 % Call main part of the program and return a object m that store the
 % results. The option "ignore_ratio" mean percentage of low density cells
 % ignored when compute overlap between different populations
-m = C2G(data,preclustered_label,label,means,covs,density,'ignore_ratio',0.2,'markernames',markernames,'color',col); 
+m = C2G(data,preclustered_label,label,density); 
 % Draw the obtained gating hierarchy
-m.visulize_gating_sequence(data,markernames,1,0); 
 % Show statistics
+%m.draw_gates(data,preclustered_label, density);
+m.view_gates(data,markernames,20);
 outtable = m.show_f_score(label); 
 
 %% Load CYTOF datasets
@@ -79,23 +80,27 @@ n_markers = length(markers);
 
 %% Generate gating hierarchy for manually gated populations
 % Precluster the ungated cells
-label = cluster_ungated_gmm(data,ori_l);
+rng(9464)
+%label = cluster_ungated_gmm(data,ori_l,100,60);
+[label,feature] = cluster_ungated(data,ori_l);
 % Precompute the local density
-[means, covs, density] = compute_density(data,label);
+[~, ~, density] = compute_density(data,label);
 % Perform the anlysis
-m = C2G(data,label,ori_l,means,covs,density);
-m.visulize_gating_sequence(data,markers,2,0);
+m = C2G(data,label,ori_l,density,feature);
+%m = C2G2(data,label,ori_l,means,covs,overlap2d);
+%m.draw_gates(data,label, density);
+m.view_gates(data,markers,20);
 m.show_f_score(ori_l);
 
 %% Generate gating hierarchy for K-means defined populations (K=10)
 rng(9464)
 km_l = kmeans(data,10);
 % Precluster the ungated cells
-label = cluster_ungated_gmm(data,km_l);
+label = cluster_ungated(data,km_l);
 new_km_l = km_l;
 % Precompute the local density
-[means, covs, density] = compute_density(data,label);
+[~, ~, density] = compute_density(data,label);
 % Perform the anlysis
-m = C2G(data,label,new_km_l,means,covs,density,'ignore_ratio',0.2);
-m.visulize_gating_sequence(data,markers,4,100);
+m = C2G(data,label,new_km_l,density,'ignore_ratio',0.2);
+m.view_gates(data,markers,20);
 m.show_f_score(new_km_l);

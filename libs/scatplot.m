@@ -62,7 +62,7 @@ if nargin==0
     return
 end
 if nargin<3 | isempty(method)
-    method = 'vo';
+    method = 'gd';
 end
 if isnumeric(method)
    gsp(x,y,method,2)
@@ -204,6 +204,16 @@ switch method %Calculate Data Density
                 dd(k) = 1/a;
             end %if
         end %for
+    case 'gd'
+        x_inv = range(x) / 40 + 0.0001;
+        y_inv = range(y) / 40 + 0.0001;
+        nx = floor((x-min(x))/x_inv);
+        ny = floor((y-min(y))/y_inv);
+        code = nx*100 + ny;
+        [grid,~,ic] = unique(code);
+        freq = histc(ic,1:length(grid));
+        cell_freq = freq(ic);
+        dd = cell_freq./x_inv./y_inv;
 end %switch
 return
 %~~~~~~~~~~ Graf Scatter Plot ~~~~~~~~~~~

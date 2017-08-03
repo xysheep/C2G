@@ -6,9 +6,16 @@ means = cell(0);
 covs = cell(0);
 density = zeros(size(data,1), n_dim, n_dim);
 % 
+fprintf('Compute 2D Local-Density for all marker pairs [');
+tmp_n = 0;
 for i = 1:n_dim-1
     for j = i+1:n_dim
-%         fprintf('Compute Local-Density for marker %d and marker %d\n',i,j);
+        tmp_n = tmp_n + 1;
+        perc = round(100*2*tmp_n./(n_dim*(n_dim-1)));
+        if tmp_n > 1
+            fprintf('\b\b\b\b\b')
+        end
+        fprintf('%3d%%]',perc);
 %         tic
         for t = 1:length(all_labels)
             idx = (label == all_labels(t));
@@ -34,7 +41,7 @@ for i = 1:n_dim-1
 %         toc
     end
 end
-
+fprintf('\n');
 % for l = all_labels'
 %     means{l} = mean(data(label==l,:));
 %     covs{l}  = cov(data(label==l,:));

@@ -1,4 +1,4 @@
-function T = C2G(d,l,ori_l,density,varargin)%ig_ratio,markernames,col)
+function T = C2G(d,l,ori_l,varargin)%ig_ratio,markernames,col)
 % C2G perform the analysis return a gatingTree object that store the
 % obtained gating hierarchy.
 %       T = C2G(d,l,ori_l,...) "d" is the M-by-N data matrix where M is the
@@ -16,15 +16,15 @@ function T = C2G(d,l,ori_l,density,varargin)%ig_ratio,markernames,col)
 
 n_markers = size(d,2);
 % Compute local density
-if ~exist('density','var')
-    fprintf('Local density not provided, computing...\n');tic;
-    density = compute_density(d,l);toc;
-end
+% if ~exist('density','var')
+%     fprintf('Local density not provided, computing...\n');tic;
+%     density = compute_density(d,l);toc;
+% end
 
 % Initiate other parameters
 pnames = { 'ignore_ratio','markernames','color'};
 dflts  = { 0.05          ,[]           ,[]};
-[ig_ratio,markernames,col] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+[~,markernames,col] = internal.stats.parseArgs(pnames,dflts,varargin{:});
 
 
 queue = CQueue();
@@ -44,7 +44,6 @@ while ~queue.isempty()
         best_pair = 1;
         best_gatelabels = cell(1);
         best_mainmem = cell(1);
-        best_igperc = cell(1);
         best_boundary = cell(1);
         %best_exclude_gates =0;
         sub_d = d(cells_idx,:);
@@ -63,24 +62,24 @@ while ~queue.isempty()
         end
         
         tmp_k = 0;
+        fprintf('Step:%3d\t[', 2-step);
         for i = 1:n_markers - 1
             for j = i+1:n_markers
                 %tic
                 %fprintf('i=%2d\tj=%2d\t',i,j);
                 
-                [gatelabels,main_members,ignore_perc,boundary,flag_seperate,over_matrix] = ...
-                    new_bestgate(sub_d(:,i),sub_d(:,j),...
-                    sub_l,unique(sub_ori_l),T.cell_label{node_id},...
-                    density(cells_idx,i,j),ig_ratio);
+                [gatelabels,main_members,boundary,flag_seperate,over_matrix] = ...
+                    new_bestgate_grid(sub_d(:,i),sub_d(:,j),...
+                    sub_l,unique(sub_ori_l),T.cell_label{node_id});
                 
                 entropy = new_entropy_gate(sub_ori_l,gatelabels);
-                %fprintf('Step:%d\ti:%d\tj:%d\tentropy=%.2f\n',2-step,i,j,entropy);
-                %toc
+                
+                if tmp_k > 0 
+                    fprintf('\b\b\b\b\b');
+                end
+                fprintf('%3d%%]',round(200*(tmp_k+1)/(n_markers*(n_markers-1))));
                 n_gates = length(gatelabels);exclude_cells=0;
                 if n_gates ==1
-                    %current_pop = length(T.main_member{node_id});
-                    %gated_pop = length(main_members{1}');
-                    % Termination condition is too strong here!
                     current_pop = length(sub_l);
                     gated_pop = length(sub_l(gatelabels{1}));
                     exclude_cells = current_pop - gated_pop;
@@ -93,13 +92,14 @@ while ~queue.isempty()
                     best_pair = [i j];
                     best_gatelabels = gatelabels;
                     best_mainmem = main_members;
-                    best_igperc = ignore_perc;
                     best_boundary = boundary;
 
                 end
                 
                 if step >= 1 && ~isempty(markernames)&& ~isempty(col)%isa(boundary,'cell') %&& length(boundary) > 1
-                    h = subplot(n_markers*(n_markers-1)/2,4,tmp_k*4+5*(step-1)-2*(step-1.5)*1);
+                    plots_row = n_markers*(n_markers-1)/2;
+                    plots_col = 4;
+                    h = subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*1);
                     if step == 2
                         p = get(h,'Position');
                         p(1) = p(1) + 0.05;
@@ -111,21 +111,25 @@ while ~queue.isempty()
                     
                     visulizeGroups(sub_d(:,i),sub_d(:,j),sub_l,col(unique(sub_l)+1,:));
                     legend(strread(num2str(unique(sub_l)'),'%s'),'Location','best');
-                    xlabel(markernames(i),'FontSize', 15);
-                    ylabel(markernames(j),'FontSize', 15);
+                    xlabel(markernames(i),'FontSize', 20);
+                    ylabel(markernames(j),'FontSize', 20);
+                    set(gca,'xtick',[])
+                    set(gca,'ytick',[])
+                    set(gca,'fontsize',15)
                     if tmp_k == 0
                         title(sprintf('Scatter Plot of\n Cell Populations'),'FontSize', 16)
                     end
-                    subplot(n_markers*(n_markers-1)/2,4,tmp_k*4+5*(step-1)-2*(step-1.5)*2);
+                    subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*2);
                     imagesc(over_matrix,[0 max(over_matrix(:))]);
                     set(gca,'XTick',1:length(unique(sub_l)));
                     set(gca,'XTickLabel',unique(sub_l(sub_l~=0))');
                     set(gca,'YTick',1:length(unique(sub_l)));
                     set(gca,'YTickLabel',unique(sub_l(sub_l~=0))');
+                    set(gca,'fontsize',20);%'1:length(unique(sub_l)));
                     if tmp_k == 0
                         title(sprintf('Compute Overlap\n between Populations'),'FontSize', 16)
                     end
-                    subplot(n_markers*(n_markers-1)/2,4,tmp_k*4+5*(step-1)-2*(step-1.5)*3);
+                    subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*3);
                     m = mcl(over_matrix);
                     m = round(m,3);
                     clustm = zeros(size(m,1),1)';
@@ -136,7 +140,7 @@ while ~queue.isempty()
                     if tmp_k == 0
                         title(sprintf('MCL Clustering\n of Populations'),'FontSize', 16)
                     end
-                    h = subplot(n_markers*(n_markers-1)/2,4,tmp_k*4+5*(step-1)-2*(step-1.5)*4);
+                    h = subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*4);
                     if step == 1
                         p = get(h,'Position');
                         p(1) = p(1) + 0.025;
@@ -148,8 +152,10 @@ while ~queue.isempty()
                     for i_bon = 1:length(boundary)
                         plot(boundary{i_bon}(:,1),boundary{i_bon}(:,2),'b-o');
                     end
-                    xlabel(markernames(i),'FontSize', 15);
-                    ylabel(markernames(j),'FontSize', 15);
+                    xlabel(markernames(i),'FontSize', 20);
+                    ylabel(markernames(j),'FontSize', 20);
+                    set(gca,'xtick',[])
+                    set(gca,'ytick',[])
                     if (n_gates>1 || (flag_seperate && exclude_cells>50) )
                         str_entropy = sprintf('Entropy = %.3f',entropy);
                     else
@@ -185,13 +191,18 @@ while ~queue.isempty()
 %         end
         
         if length(best_pair)>1
-            fprintf('[Selected] i = %d\tj=%d\n',best_pair(1),best_pair(2));
+            fprintf('\n[Selected] marker pair %s and %s\n',markernames{best_pair(1)},markernames{best_pair(2)});
+            T.show_f_score(ori_l);
             T.setdim(node_id,best_pair);
             for i_gate=1:length(best_gatelabels)
                 T.addnode1(node_id,cells_idx(best_gatelabels{i_gate}),...
-                    best_mainmem{i_gate},best_igperc{i_gate},best_boundary{i_gate});
+                    best_mainmem{i_gate},best_boundary{i_gate});
                 queue.push(T.numNode);
             end
+        else
+            current_ori_l = unique(sub_ori_l);
+            current_ori_l(current_ori_l==0) = [];
+            fprintf('No further separation. Node %d is gate for cell population %s\n',node_id, num2str(current_ori_l'));
         end
    % end
 end

@@ -5,7 +5,6 @@ classdef gatingTree < handle
         cell_idx = {[]}
         boundary = {[]}
         dimpair = {[]}
-        ignore_perc = []
         numNode = 1;
         parents    % node_id of last gate. 0 means all data
         buffersize = 10;% avoid change the buffer size in each loop
@@ -31,7 +30,7 @@ classdef gatingTree < handle
             if nargin > 1
                 obj.cell_idx = {1:numcell};
             end
-            obj.cell_label{1} = all_label;
+            obj.cell_label{1} = all_label(all_label~=0);
             obj.parents = zeros(1,obj.buffersize);
         end
         function obj = addnode(obj,parent, cell_labels)
@@ -45,7 +44,7 @@ classdef gatingTree < handle
             obj.cell_label{obj.numNode+1} = cell_labels;
             obj.numNode = obj.numNode +1;
         end
-        function obj = addnode1(obj,parent, cell_idx, cell_labels, ignore, boundary)
+        function obj = addnode1(obj,parent, cell_idx, cell_labels, boundary)
             if obj.numNode == obj.buffersize
             % If Number of nodes close to the buffersize, double the
             % buffersize
@@ -55,7 +54,6 @@ classdef gatingTree < handle
             obj.parents(obj.numNode+1) = parent;
             obj.cell_idx{obj.numNode+1} = cell_idx;
             obj.cell_label{obj.numNode+1} = cell_labels;
-            obj.ignore_perc(obj.numNode+1) = ignore;
             obj.boundary{obj.numNode+1} = boundary;
             obj.numNode = obj.numNode +1;
         end
@@ -133,27 +131,32 @@ classdef gatingTree < handle
                 obj.boundary{i_node} = [boundariesx,boundariesy]; 
             end
         end
-        function view_gates(obj,data,markers,fontsize,n_lines)
-            if ~exist('n_lines','var')
-                n_lines = 2;
-            end
-            if ~exist('fontsize','var')
-                fontsize = 20;
-            end
+        function view_gates(obj,data,markers,varargin)
+            pnames = {'fontsize','n_lines','ignore_small','onepanel'};
+            dflts = {20, 3, 100, false};
+            [fontsize, n_lines, ignore_small, onepanel] = internal.stats.parseArgs(pnames,dflts,varargin{:});
             if isempty(markers)
                 markers =  strread(num2str(1:size(data,2)),'%s');
             end
             node_to_show = find(~cellfun(@isempty,obj.dimpair));
+            num_gates = histc(obj.parents,node_to_show);
+            idx = false(size(node_to_show));
+            idx( num_gates > 1) = true;
+            parentNum = cellfun(@length,obj.cell_idx(node_to_show));
+            childNum = cellfun(@length,...
+                obj.cell_idx(arrayfun(@(x)find(obj.parents == x,1),node_to_show)));
+            idx( num_gates == 1 & (parentNum > ignore_small + childNum)) = true;
+            node_to_show = node_to_show(idx);
             figure;
-            set(gcf,'Position',[100,100,320*ceil(length(node_to_show)/n_lines),320*n_lines])
+            set(gcf,'Position',[50,50,320*ceil((length(node_to_show)+onepanel)/n_lines),320*n_lines])
             for n_i = 1:length(node_to_show)
-                subplot(n_lines,ceil(length(node_to_show)/n_lines),n_i);
+                subplot(n_lines,ceil((length(node_to_show)+onepanel)/n_lines),n_i);
                 n_id = node_to_show(n_i);
                 title(sprintf('Node %d',n_id),'FontSize',fontsize);
                 sub_d = data(obj.cell_idx{n_id},:);
                 %disp(obj.dimpair{n_id})
                 i = obj.dimpair{n_id}(1);j = obj.dimpair{n_id}(2);
-                scatplot(sub_d(:,i),sub_d(:,j),'voronoi',[],100,5,1,4);
+                scatplot(sub_d(:,i),sub_d(:,j),'gd',[],100,5,1,4);
                 xlabel(markers{i},'FontSize',fontsize);
                 ylabel(markers{j},'FontSize',fontsize);
                 hold on
@@ -169,7 +172,11 @@ classdef gatingTree < handle
                 end
             end
             %subplot(n_lines,ceil((1+length(node_to_show))/n_lines),length(node_to_show)+1);
-            figure('Position',[100,100,320,320])
+            if onepanel
+                subplot(n_lines,ceil((length(node_to_show)+onepanel)/n_lines),n_i+1);
+            else
+                figure('Position',[100,100,320,320])
+            end
             obj.plottree()
         end
         function [outtable,nmi] = show_f_score(obj,label)
@@ -213,7 +220,7 @@ classdef gatingTree < handle
             m_c = mcl(adj);
             [~,mx] = max(m_c);
             for i = unique(mx)
-                merge_pop = cell2mat(obj.main_member(leaf_idx(mx==i)));
+                merge_pop = cell2mat(obj.cell_label(leaf_idx(mx==i)));
                 if length(merge_pop)> 1 && obj.check_parents(leaf_idx(mx==i))
                     fprintf('Population %s can be merged, ',sprintf('%d ' ,merge_pop(:)));
                     fprintf('they are in gate %s.\n',sprintf('%d ' ,leaf_idx(mx==i)));

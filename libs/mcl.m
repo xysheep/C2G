@@ -31,7 +31,7 @@ while 1
         %fprintf('residual energy: %f\n', e);
 
     end % while e
-    if sum(isnan(m))==0
+    if sum(isnan(m(:)))==0
         break
     else
         minval = minval/10;

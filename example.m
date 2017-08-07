@@ -150,3 +150,6 @@ label = kmeans(d,10);
 tic;m = C2G(d, label, label,'markernames',marker(marker_idx));toc;
 m.view_gates(d,marker(marker_idx),'ignore_small',3000,'n_lines',4);
 m.show_f_score(label);
+
+
+

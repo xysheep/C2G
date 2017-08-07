@@ -175,7 +175,7 @@ classdef gatingTree < handle
             if onepanel
                 subplot(n_lines,ceil((length(node_to_show)+onepanel)/n_lines),n_i+1);
             else
-                figure('Position',[100,100,320,320])
+                figure('Position',[100,100,640,640])
             end
             obj.plottree()
         end

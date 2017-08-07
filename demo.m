@@ -44,24 +44,15 @@ axis([-5 15 -5 15 -5 15]);
 % Precluster the simulated data
 rng(9464);
 preclustered_label = cluster_ungated(data,label);
-figure('Position',[680 478 560 420]);
-col = [0.8 0.8 0.8;hsv(length(unique(preclustered_label)))];
-scatter3(data(:,1),data(:,2),data(:,3),1,col(preclustered_label+1,:));
-xlabel('Marker 1')
-ylabel('Marker 2')
-zlabel('Marker 3')
-axis([-5 15 -5 15 -5 15]);
 
 % Call main part of the program and return a object m that store the
 % results. The option "ignore_ratio" mean percentage of low density cells
 % ignored when compute overlap between different populations
 
-m = C2G(data,preclustered_label,label,'markernames',markernames,'color',col); 
-%m = C2G2(data,preclustered_label,label,means,covs,overlap2d,'markernames',markernames,'color',col); 
+m = C2G(data,preclustered_label,label,'markernames',markernames,'showdetail',false); 
 % Draw the obtained gating hierarchy
 % Show statistics
-%m.draw_gates(data,preclustered_label, density);
-m.view_gates(data,markernames,20);
+m.view_gates(data,markernames,'n_lines',1,'onepanel',true);
 outtable = m.show_f_score(label); 
 
 %% Load CYTOF datasets
@@ -70,6 +61,10 @@ outtable = m.show_f_score(label);
 % store in the "test" folder. "CD4_Effmen.fcs", "CD4_naive.fcs", and
 % "CD8_naive.fcs" are cells of target populations and "ctr.fcs" contain all
 % cells. Only work with surface protein markers. 
+clear
+close all
+addpath('src')
+addpath('libs')
 fdname = 'testdata';
 [ori_data,ori_l,ori_markers]=load_mul_fcs(fdname,'ctr.fcs');
 
@@ -79,67 +74,42 @@ markers = ori_markers(surface_idx);
 n_markers = length(markers);
 
 %% Generate gating hierarchy for manually gated populations
+
 % Precluster the ungated cells
 rng(9464)
-%label = cluster_ungated_gmm(data,ori_l,100,60);
 label = cluster_ungated(data,ori_l);
 % Perform the anlysis
-m = C2G(data,label,ori_l,'markernames',markers);
-%m = C2G2(data,label,ori_l,means,covs,overlap2d);
-% Record the fareast cell from the normal distribution. 
-%m.draw_gates(data,label, density);
-m.view_gates(data,markers,20);
-m.show_f_score(ori_l);
+m_ori = C2G(data,label,ori_l,'markernames',markers,'showdetail',false);
+% Visualize the results
+m_ori.view_gates(data,markers,'n_lines',3,'ignore_small',0,'onepanel',true);
+m_ori.show_f_score(ori_l);
 
 %% Generate gating hierarchy for K-means defined populations (K=10)
 rng(9464)
 km_l = kmeans(data,10);
-% Precluster the ungated cells
-label = cluster_ungated(data,km_l);
-new_km_l = km_l;
+new_km_l = km_l; % Since all populiations is known, no need to pre-cluster
 % Perform the anlysis
-m = C2G(data,label,new_km_l,'markernames',markers);
-m.view_gates(data,markers);
-m.show_f_score(new_km_l);
+m_km = C2G(data,km_l,km_l,'markernames',markers,'showdetail',false);
+% Visualize the results
+m_km.view_gates(data,markers,'n_lines',4,'ignore_small',200);
+m_km.show_f_score(km_l);
 
-
-
-%% Perform on large CYTOF data
-% This dataset has 200k cells and 10 protein markers
-load testdata\Screen_PACA-1-3_008.mat
-ori_data = data;
-data = ori_data(7:16,ori_data(21,:)>0.1)';
-markers = marker_names(7:16);
-
-rng(9464)
-km_l = kmeans(data,10);
-% Precluster the ungated cells
-label = cluster_ungated(data,km_l);
-new_km_l = km_l;
-% Perform the anlysis
-m = C2G(data,label,new_km_l,'ignore_ratio',0.2);
-m.view_gates(data,markers);
-m.show_f_score(new_km_l);
-
-% Pretent not know some clusters
-km_l(km_l > 6) = 0;
-label = cluster_ungated(data,km_l);
-new_km_l = km_l;
-% Perform the anlysis
-m = C2G(data,label,new_km_l,'ignore_ratio',0.2);
-m.view_gates(data,markers);
-m.show_f_score(new_km_l);
-% Around 10 minutes, f-score 0.86.
-% bottlenect is convert cell into grid.
-
-%% Scaffold CYTOF data
-% 21 protein markers
-[ori_data, marker] = readfcs_v2('testdata/TIN_BLD1_Untreated_Day3.fcs');
+%% Scaffold CyTOF data
+% This is a larger CyTOF dataset with 140k cells and 21 protein markers.
+% This dataset is clustered by k-means where k equal to 10. This part will
+% take around 10 minutes on a desktop. 
+[ori_data, marker] = readfcs_v2('testdata/bigdata/TIN_BLD1_Untreated_Day3.fcs');
+% Transform the CyTOF
 data = flow_arcsinh(ori_data,5);
+% Select protein markers
 marker_idx = [10,16,17,18,19,21,22,24,29,31,32,33,39,40,41,46,47,49,50,51,52];
 d = data(marker_idx,:)';
 rng(9464);
 label = kmeans(d,10);
-tic;m = C2G(d, label, label,'markernames',marker(marker_idx));toc;
-m.view_gates(d,marker(marker_idx),'ignore_small',1000);
+% Perform the anlysis
+tic;m = C2G(d, label, label,'markernames',marker(marker_idx),'showdetail',false);toc;
+% Visualize the results
+w = warning ('off','all');
+m.view_gates(d,marker(marker_idx),'ignore_small',3000,'n_lines',4);
+warning(w);
 m.show_f_score(label);

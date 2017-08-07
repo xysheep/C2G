@@ -22,9 +22,9 @@ n_markers = size(d,2);
 % end
 
 % Initiate other parameters
-pnames = { 'ignore_ratio','markernames','color'};
-dflts  = { 0.05          ,[]           ,[]};
-[~,markernames,col] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+pnames = { 'ignore_ratio','markernames','color','showdetail'};
+dflts  = { 0.05          ,cell(size(d,2),1)           ,[], true};
+[~,markernames,col, showdetail] = internal.stats.parseArgs(pnames,dflts,varargin{:});
 
 
 queue = CQueue();
@@ -62,7 +62,9 @@ while ~queue.isempty()
         end
         
         tmp_k = 0;
-        fprintf('Step:%3d\t[', 2-step);
+        if showdetail 
+            fprintf('Step:%3d\t[', 2-step);
+        end
         for i = 1:n_markers - 1
             for j = i+1:n_markers
                 %tic
@@ -74,10 +76,12 @@ while ~queue.isempty()
                 
                 entropy = new_entropy_gate(sub_ori_l,gatelabels);
                 
-                if tmp_k > 0 
-                    fprintf('\b\b\b\b\b');
+                if showdetail                    
+                    if tmp_k > 0 
+                        fprintf('\b\b\b\b\b');
+                    end
+                    fprintf('%3d%%]',round(200*(tmp_k+1)/(n_markers*(n_markers-1))));
                 end
-                fprintf('%3d%%]',round(200*(tmp_k+1)/(n_markers*(n_markers-1))));
                 n_gates = length(gatelabels);exclude_cells=0;
                 if n_gates ==1
                     current_pop = length(sub_l);
@@ -191,8 +195,11 @@ while ~queue.isempty()
 %         end
         
         if length(best_pair)>1
-            fprintf('\n[Selected] marker pair %s and %s\n',markernames{best_pair(1)},markernames{best_pair(2)});
-            T.show_f_score(ori_l);
+        
+            if showdetail
+                fprintf('\n[Selected] marker pair %s and %s\n',markernames{best_pair(1)},markernames{best_pair(2)});
+                T.show_f_score(ori_l);
+            end
             T.setdim(node_id,best_pair);
             for i_gate=1:length(best_gatelabels)
                 T.addnode1(node_id,cells_idx(best_gatelabels{i_gate}),...
@@ -202,7 +209,9 @@ while ~queue.isempty()
         else
             current_ori_l = unique(sub_ori_l);
             current_ori_l(current_ori_l==0) = [];
-            fprintf('No further separation. Node %d is gate for cell population %s\n',node_id, num2str(current_ori_l'));
+            if showdetail
+                fprintf('No further separation. Node %d is gate for cell population %s\n',node_id, num2str(current_ori_l'));
+            end
         end
    % end
 end

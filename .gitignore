@@ -50,7 +50,7 @@ Temporary Items
 # C2G related temp files and data
 *.fcs
 *.mat
-./manuscript/*
-
+manuscript/
+html/
 # Figures
 .pdf

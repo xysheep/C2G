@@ -1,2 +1,2 @@
-# c2g
+# C2G
 Cluster to Gate

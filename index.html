@@ -66,7 +66,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Generating 2D Gating Hierarhcy from Clustered Cytometry Data</h1><!--introduction--><p>Our algorithm cluster-to-gates(C2G) can visualize a clustered cytometry data in 2D gating hierarchy. The overall input to C2G are two variables: "data" and "label". "data" is a N-by-M matrix where N is the number of cells and M is the number of markers. "label" is a N-by-1 matrix and this matrix represent which cluster each cell belongs to (0 for ungated cells).  In this page, we will demonstrate how to use C2G to generate gating hierarchy on a simulated data, a CyTOF dataset that are manually gated, and a large CyTOF data. The software and testing data can be downloaded <b><a href="https://github.com/xysheep/c2g/releases">here</a></b> .</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialization and load the simulated data</a></li><li><a href="#2">Visualize the simulated data and pre-clustered simulated data in 3D</a></li><li><a href="#3">Run the analysis on the simulated data</a></li><li><a href="#4">Load CYTOF datasets</a></li><li><a href="#5">Generate gating hierarchy for manually gated populations</a></li><li><a href="#6">Generate gating hierarchy for K-means defined populations (K=10)</a></li><li><a href="#7">Scaffold CyTOF data</a></li></ul></div><h2 id="1">Initialization and load the simulated data</h2><p>This simulated data set contain 20000 cells, which consist of 5 populations.Two of the populations are addressed as known and labeled as 1 and 2. The cells in other populations are labeled 0 which means "ungated". A visualization of the original data is also shown in the following sections.</p><pre class="codeinput">addpath(<span class="string">'src'</span>)
+  </style></head><body><div class="content"><h1>Generating 2D Gating Hierarhcy from Clustered Cytometry Data</h1><!--introduction--><p>Our algorithm cluster-to-gates(C2G) can visualize a clustered cytometry data in 2D gating hierarchy. The overall input to C2G are two variables: "data" and "label". "data" is a N-by-M matrix where N is the number of cells and M is the number of markers. "label" is a N-by-1 matrix and this matrix represent which cluster each cell belongs to (0 for ungated cells).  In this page, we will demonstrate how to use C2G to generate gating hierarchy on a simulated data, a CyTOF dataset that are manually gated, and a large CyTOF data. The software and testing data can be downloaded <b><a href="https://github.com/xysheep/c2g/releases">here</a></b> .</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialization and load the simulated data</a></li><li><a href="#2">Visualize the simulated data and pre-clustered simulated data in 3D</a></li><li><a href="#3">Run the analysis on the simulated data</a></li><li><a href="#4">Load CyTOF datasets</a></li><li><a href="#5">Generate gating hierarchy for manually gated populations</a></li><li><a href="#6">Generate gating hierarchy for K-means defined populations (K=10)</a></li><li><a href="#7">Scaffold CyTOF data</a></li></ul></div><h2 id="1">Initialization and load the simulated data</h2><p>This simulated data set contain 20000 cells, which consist of 5 populations.Two of the populations are addressed as known and labeled as 1 and 2. The cells in other populations are labeled 0 which means "ungated". A visualization of the original data is also shown in the following sections.</p><pre class="codeinput">addpath(<span class="string">'src'</span>)
 addpath(<span class="string">'libs'</span>)
 load(<span class="string">'testdata/simulated.mat'</span>,<span class="string">'data'</span>,<span class="string">'label'</span>);
 markernames ={<span class="string">'Marker 1'</span>,<span class="string">'Marker 2'</span>,<span class="string">'Marker 3'</span>};
@@ -98,7 +98,7 @@ outtable = m.show_f_score(label);
          1	   3	  5411	    18	     0	  0.998
          2	   4	  9166	     1	     0	  1.000
 Normalized Mutual Information = 0.996
-</pre><img vspace="5" hspace="5" src="html/demo_02.png" alt=""> <h2 id="4">Load CYTOF datasets</h2><p>Read multiple fcs files. Each fcs file correspond to one cell population Automatically generate cell labels based on fsc files. FCS files are store in the "test" folder. "CD4_Effmen.fcs", "CD4_naive.fcs", and "CD8_naive.fcs" are cells of target populations and "ctr.fcs" contain all cells. Only work with surface protein markers.</p><pre class="codeinput">clear
+</pre><img vspace="5" hspace="5" src="html/demo_02.png" alt=""> <h2 id="4">Load CyTOF datasets</h2><p>Read multiple fcs files. Each fcs file correspond to one cell population Automatically generate cell labels based on fsc files. FCS files are store in the "test" folder. "CD4_Effmen.fcs", "CD4_naive.fcs", and "CD8_naive.fcs" are cells of target populations and "ctr.fcs" contain all cells. Only work with surface protein markers.</p><pre class="codeinput">clear
 close <span class="string">all</span>
 addpath(<span class="string">'src'</span>)
 addpath(<span class="string">'libs'</span>)
@@ -179,7 +179,7 @@ Normalized Mutual Information = 0.859
 % cells and M is the number of markers. "label" is a N-by-1 matrix and this
 % matrix represent which cluster each cell belongs to (0 for ungated
 % cells).  In this page, we will demonstrate how to use C2G to generate
-% gating hierarchy on a simulated data and on a CYTOF dataset that are
+% gating hierarchy on a simulated data and on a CyTOF dataset that are
 % manually gated.
 % The software and testing data can be downloaded *here* . 
 
@@ -229,7 +229,7 @@ m = C2G(data,preclustered_label,label,'markernames',markernames,'showdetail',fal
 m.view_gates(data,markernames,'n_lines',1,'onepanel',true);
 outtable = m.show_f_score(label); 
 
-%% Load CYTOF datasets
+%% Load CyTOF datasets
 % Read multiple fcs files. Each fcs file correspond to one cell population
 % Automatically generate cell labels based on fsc files. FCS files are
 % store in the "test" folder. "CD4_Effmen.fcs", "CD4_naive.fcs", and

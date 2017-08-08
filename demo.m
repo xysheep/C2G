@@ -49,7 +49,7 @@ preclustered_label = cluster_ungated(data,label);
 % results. The option "ignore_ratio" mean percentage of low density cells
 % ignored when compute overlap between different populations
 
-m = C2G(data,preclustered_label,label,'markernames',markernames,'showdetail',false); 
+m = C2G(data,preclustered_label,label,'markernames',markernames); 
 % Draw the obtained gating hierarchy
 % Show statistics
 m.view_gates(data,markernames,'n_lines',1,'onepanel',true);
@@ -79,7 +79,7 @@ n_markers = length(markers);
 rng(9464)
 label = cluster_ungated(data,ori_l);
 % Perform the anlysis
-m_ori = C2G(data,label,ori_l,'markernames',markers,'showdetail',false);
+m_ori = C2G(data,label,ori_l,'markernames',markers);
 % Visualize the results
 m_ori.view_gates(data,markers,'n_lines',3,'ignore_small',0,'onepanel',true);
 m_ori.show_f_score(ori_l);
@@ -89,7 +89,7 @@ rng(9464)
 km_l = kmeans(data,10);
 new_km_l = km_l; % Since all populiations is known, no need to pre-cluster
 % Perform the anlysis
-m_km = C2G(data,km_l,km_l,'markernames',markers,'showdetail',false);
+m_km = C2G(data,km_l,km_l,'markernames',markers);
 % Visualize the results
 m_km.view_gates(data,markers,'n_lines',4,'ignore_small',200);
 m_km.show_f_score(km_l);
@@ -107,7 +107,7 @@ d = data(marker_idx,:)';
 rng(9464);
 label = kmeans(d,10);
 % Perform the anlysis
-tic;m = C2G(d, label, label,'markernames',marker(marker_idx),'showdetail',false);toc;
+tic;m = C2G(d, label, label,'markernames',marker(marker_idx));toc;
 % Visualize the results
 w = warning ('off','all');
 m.view_gates(d,marker(marker_idx),'ignore_small',3000,'n_lines',4);

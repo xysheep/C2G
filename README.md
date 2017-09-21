@@ -47,11 +47,12 @@ C2G has the following hyperparameter that you can tune according to the shape of
 **'outlier_level'** Percentage of low density cells of target populations ignored when decide whether a unlabeled cells overlaped with target populations. Default is 0.05. 
 ### function C2G
 **'showdetail'** Whether to show the f-score of each cell populations after each iteration. Default is true. 
+**'trivial_gate'** Smallest number of cells a single gate must exclude when it's the only gate in that marker pair. Default is 50.
 ### function gatingTree.view_gates
 **'fontsize'** Default is 20. 
 
 **'n_lines'** Number of rows in output figures that have multiple panels. Default is 3. 
 
-**'ignore_small'** This is a threshold. When a node has only one gate and this gate fail to separate more than 'ignore_small' number of cells, this gate will not be drawn.  This function is useful to filter out some unnecessary gates and only leave the important gates that show the hierarchy. This parameter only affect the visualization. Default is 100. 
+**'ignore_small'** This is a threshold. When a node has only one gate and this gate fail to separate more than 'ignore_small' number of cells, this gate will not be drawn.  This function is useful to filter out some unnecessary gates and only leave the important gates that show the hierarchy.  Compare to 'trivial_gate' parameter in C2G section, this parameter only affect the visualization. Default is 100. 
 
 **'onepanel'** Whether the gating tree is present in the same panel of the gating sequences. Default is false. 

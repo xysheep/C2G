@@ -6,8 +6,8 @@
 % matrix represent which cluster each cell belongs to (0 for ungated
 % cells).  In this page, we will demonstrate how to use C2G to generate
 % gating hierarchy on a simulated data and on a CyTOF dataset that are
-% manually gated. The software and testing data can be downloaded
-% <https://github.com/xysheep/C2G/releases here> .
+% manually gated.
+% The software and testing data can be downloaded *here* . 
 
 %% Initialization and load the simulated data
 % This simulated data set contain 20000 cells, which consist of 5
@@ -56,15 +56,12 @@ m.view_gates(data,markernames,'n_lines',1,'onepanel',true);
 outtable = m.show_f_score(label); 
 
 %% Load a moderate-sized CyTOF dataset with ~10,1000 cells
-% This is a dataset about T cell signaling (Krishnaswamy et al, Science,
-% 2014). It can be downloaded from
-% <https://www.c2b2.columbia.edu/danapeerlab/html/dremi-data.html here>.
-% This section will read multiple fcs files. Each fcs file correspond to
-% one cell population. C2G will automatically generate cell labels based on
-% fsc files. FCS files are store in the "testdata" folder.
-% "CD4_Effmen.fcs", "CD4_naive.fcs", and "CD8_naive.fcs" are cells of
-% target populations and "ctr.fcs" contain all cells. In this example, we
-% only use surface protein markers.
+% This data comes from 
+% This section will read multiple fcs files. Each fcs file correspond to one cell population
+% Automatically generate cell labels based on fsc files. FCS files are
+% store in the "testdata" folder. "CD4_Effmen.fcs", "CD4_naive.fcs", and
+% "CD8_naive.fcs" are cells of target populations and "ctr.fcs" contain all
+% cells. Only work with surface protein markers. 
 clear
 close all
 addpath('src')
@@ -98,12 +95,10 @@ m_km = C2G(data,km_l,km_l,'markernames',markers);
 m_km.view_gates(data,markers,'n_lines',4,'ignore_small',200);
 m_km.show_f_score(km_l);
 
-%% Apply C2G to large CyTOF dataset with ~140,000 cells
-% This is a larger CyTOF dataset with 140k cells and 21 protein markers
-% (Spitzer, Matthew H., et al, Science, 2015 ). This data can be download
-% from <https://community.cytobank.org/cytobank/experiments/60068 here>
+%% Scaffold CyTOF data
+% This is a larger CyTOF dataset with 140k cells and 21 protein markers.
 % This dataset is clustered by k-means where k equal to 10. This part will
-% take around 10 minutes on a desktop.
+% take around 10 minutes on a desktop. 
 [ori_data, marker] = readfcs_v2('testdata/bigdata/TIN_BLD1_Untreated_Day3.fcs');
 % Transform the CyTOF
 data = flow_arcsinh(ori_data,5);
@@ -119,8 +114,3 @@ w = warning ('off','all');
 m.view_gates(d,marker(marker_idx),'ignore_small',3000,'n_lines',4);
 warning(w);
 m.show_f_score(label);
-
-%% Reference
-% Krishnaswamy, Smita, Matthew H. Spitzer, Michael Mingueneau, Sean C. Bendall, Oren Litvin, Erica Stone, Dana Pe’er, and Garry P. Nolan. "Conditional density-based analysis of T cell signaling in single-cell data." _Science_ 346, no. 6213 (2014): 1250689.
-%
-% Spitzer, Matthew H., Pier Federico Gherardini, Gabriela K. Fragiadakis, Nupur Bhattacharya, Robert T. Yuan, Andrew N. Hotson, Rachel Finck et al. "An interactive reference framework for modeling a dynamic immune system." _Science_ 349, no. 6244 (2015): 1259425.

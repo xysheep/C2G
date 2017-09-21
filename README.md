@@ -40,7 +40,7 @@ In general, you need to have MATLAB installed and directory of "libs" and "src" 
 4. In MATLAB, go to the unzipped folder
 5. Right click the "libs" and "src" folder and choose "add to path"
 ## Parameters
-C2G has the following hyperparameter that you can tune according to the shape of your data. 
+C2G has the following parameter that you can tune according to the shape of your data. 
 ### function cluster_ungated
 **'pre_cluster_perc'** Minimum percentage of unlabeled cells that should be pre-clustered. Default is 0.95. 
 

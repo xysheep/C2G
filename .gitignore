@@ -50,12 +50,10 @@ Temporary Items
 
 
 # MATLAB
+*.asv
 
 # C2G related temp files and data
 manuscript/
 html/
-example.m
 # Figures
 .pdf
-*.asv
-*.asv

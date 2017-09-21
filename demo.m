@@ -10,10 +10,10 @@
 % <https://github.com/xysheep/C2G/releases here> .
 
 %% Initialization and load the simulated data
-% This simulated data set contain 20000 cells, which consist of 5
-% populations.Two of the populations are addressed as known and labeled as
+% This simulated data set contains 20000 cells, which consists of 5
+% populations.Two of the populations are considered as target and labeled as
 % 1 and 2. The cells in other populations are labeled 0 which means
-% "ungated". A visualization of the original data is also shown in the
+% "unlabeled". A visualization of the original data is also shown in the
 % following sections.
 addpath('src')
 addpath('libs')
@@ -34,37 +34,32 @@ axis([-5 15 -5 15 -5 15]);
 
 %% Run the analysis on the simulated data
 % This section perform the analysis on the simulated data. If your data
-% have no "ungated" cells, preclustered step can be skipped. If you skip
+% have no "unlabeled" cells, precluster step can be skipped. If you skip
 % precluster, the second and third parameter in function "C2G" should be
-% the same. Compute local density step is also optional, it can decrease
-% time cost in computing density when you want to try different parameter
-% setting in "C2G". If you skipped it, no need to input the fourth
-% parameter in "C2G".
+% the same. 
 
 % Precluster the simulated data
 rng(9464);
 preclustered_label = cluster_ungated(data,label);
 
 % Call main part of the program and return a object m that store the
-% results. The option "ignore_ratio" mean percentage of low density cells
-% ignored when compute overlap between different populations
-
+% results. 
 m = C2G(data,preclustered_label,label,'markernames',markernames); 
 % Draw the obtained gating hierarchy
-% Show statistics
 m.view_gates(data,markernames,'n_lines',1,'onepanel',true);
+% Show statistics
 outtable = m.show_f_score(label); 
 
-%% Load a moderate-sized CyTOF dataset with ~10,1000 cells
+%% Load a moderate-sized CyTOF dataset with ~10,000 cells
 % This is a dataset about T cell signaling (Krishnaswamy et al, Science,
 % 2014). It can be downloaded from
 % <https://www.c2b2.columbia.edu/danapeerlab/html/dremi-data.html here>.
 % This section will read multiple fcs files. Each fcs file correspond to
-% one cell population. C2G will automatically generate cell labels based on
-% fsc files. FCS files are store in the "testdata" folder.
-% "CD4_Effmen.fcs", "CD4_naive.fcs", and "CD8_naive.fcs" are cells of
-% target populations and "ctr.fcs" contain all cells. In this example, we
-% only use surface protein markers.
+% one cell population manually gated by the authors. C2G will automatically
+% generate cell labels based on fsc files. FCS files are store in the
+% "testdata" folder. "CD4_Effmen.fcs", "CD4_naive.fcs", and "CD8_naive.fcs"
+% are cells of target populations (manually defined) and "ctr.fcs" contain
+% all cells. In this example, we only use surface protein markers.
 clear
 close all
 addpath('src')
@@ -78,6 +73,10 @@ markers = ori_markers(surface_idx);
 n_markers = length(markers);
 
 %% Generate gating hierarchy for manually gated populations
+% In this section, we'll use the data loaded from previous section and
+% treat the three manually defined cell populations as target populations.
+% Here, number of "unlabeled" cells is around two-fold of cells in target
+% populations.
 
 % Precluster the ungated cells
 rng(9464)
@@ -89,21 +88,28 @@ m_ori.view_gates(data,markers,'n_lines',3,'ignore_small',0,'onepanel',true);
 m_ori.show_f_score(ori_l);
 
 %% Generate gating hierarchy for K-means defined populations (K=10)
+% In this section, we will use the same CyTOF data used in previous
+% section. The cell labels are defined by k-means algorithm where k equal
+% to 10. All of the 10 clusters will be considered as target populations,
+% in other words,there're no "unlabeled" cells.
+
 rng(9464)
 km_l = kmeans(data,10);
 new_km_l = km_l; % Since all populiations is known, no need to pre-cluster
 % Perform the anlysis
 m_km = C2G(data,km_l,km_l,'markernames',markers);
 % Visualize the results
-m_km.view_gates(data,markers,'n_lines',4,'ignore_small',200);
+m_km.view_gates(data,markers,'n_lines',4,'ignore_small',300);
 m_km.show_f_score(km_l);
 
 %% Apply C2G to large CyTOF dataset with ~140,000 cells
 % This is a larger CyTOF dataset with 140k cells and 21 protein markers
 % (Spitzer, Matthew H., et al, Science, 2015 ). This data can be download
-% from <https://community.cytobank.org/cytobank/experiments/60068 here>
-% This dataset is clustered by k-means where k equal to 10. This part will
-% take around 10 minutes on a desktop.
+% free from <https://community.cytobank.org/cytobank/experiments/60068
+% here>. (The dataset is hosted on Cytobank and you need to register to
+% download it) This dataset is clustered by k-means where k equal to 10.
+% All of the 10 k-means defined clusters are treated as target populations.
+% This part will take around 10 minutes on a desktop.
 [ori_data, marker] = readfcs_v2('testdata/bigdata/TIN_BLD1_Untreated_Day3.fcs');
 % Transform the CyTOF
 data = flow_arcsinh(ori_data,5);

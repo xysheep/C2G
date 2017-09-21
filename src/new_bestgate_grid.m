@@ -1,5 +1,4 @@
-function [gated_labels,main_members,boundaries,flag,adj] = new_bestgate_grid(x,y,label,ori_label,ori_main_members)
-GRID_SIZE = 40;
+function [gated_labels,main_members,boundaries,flag,adj] = new_bestgate_grid(x,y,label,ori_label,ori_main_members,GRID_SIZE)
 all_labels = unique(label);
 all_labels(all_labels==0 | histc(label,all_labels)<1) = [];
 ori_label(ori_label==0) = [];

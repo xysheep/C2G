@@ -4,15 +4,9 @@ function T = C2G(d,l,ori_l,varargin)%ig_ratio,markernames,col)
 %       T = C2G(d,l,ori_l,...) "d" is the M-by-N data matrix where M is the
 %       number of markers. "l" and "ori_l" are M-by-1 matrix represent cell
 %       labels after and before pre-cluster. 
-%       T = C2G(d,l,ori_l,density,...) "density" is the precomputed local
-%       density. It can be computed outside C2G use function
-%       "compute_density". If this parameter is not provided, C2G will
-%       compute local density later.
 % Optional parameter:
-%       ignore_ratio: percentage of low density cells ignored when compute
-%       overlap between different populations. If the data is expected to
-%       be highly noisy, increase this value for better performance.
-%       Default is 0.05. 
+%       'showdetail': true/false. Whether to show the f-score after each 
+%       iteration. Default is true. 
 
 n_markers = size(d,2);
 % Compute local density
@@ -22,9 +16,10 @@ n_markers = size(d,2);
 % end
 
 % Initiate other parameters
-pnames = { 'ignore_ratio','markernames','color','showdetail'};
-dflts  = { 0.05          ,cell(size(d,2),1)           ,[], true};
-[~,markernames,col, showdetail] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+% ignore_ratio, markernames, and color is not used in new version. 
+pnames = { 'trivial_gate','markernames','color','showdetail', 'grid_size'};
+dflts  = { 50          ,cell(size(d,2),1)           ,[], true, 40};
+[trivial_gate,markernames,col, showdetail, grid_size] = internal.stats.parseArgs(pnames,dflts,varargin{:});
 
 
 queue = CQueue();
@@ -72,7 +67,7 @@ while ~queue.isempty()
                 
                 [gatelabels,main_members,boundary,flag_seperate,over_matrix] = ...
                     new_bestgate_grid(sub_d(:,i),sub_d(:,j),...
-                    sub_l,unique(sub_ori_l),T.cell_label{node_id});
+                    sub_l,unique(sub_ori_l),T.cell_label{node_id}, grid_size);
                 
                 entropy = new_entropy_gate(sub_ori_l,gatelabels);
                 
@@ -88,7 +83,7 @@ while ~queue.isempty()
                     gated_pop = length(sub_l(gatelabels{1}));
                     exclude_cells = current_pop - gated_pop;
                 end
-                if (n_gates>1 || (flag_seperate && exclude_cells>50) ) && (entropy < best_entropy ||...
+                if (n_gates>1 || (flag_seperate && exclude_cells>trivial_gate) ) && (entropy < best_entropy ||...
                         (entropy==best_entropy && n_gates > best_n_gates))
                     best_entropy = entropy;
                     best_n_gates = n_gates;

@@ -1,32 +1,22 @@
-function new_labels = cluster_ungated(data,l,threshold,outliers_level)
+function new_labels = cluster_ungated(data,l,pre_cluster_perc,outliers_level)
 %% Function description
 % This function is used to cluster ungated cells based their overlap with
 % kown target populations. The returned cells labeled 0 in original labels
 % are changed into some cluster labels larger than original labels. 
-
-%% Scripts to test this function
-%%
-% Use the following scripts to test this function:
-%   
-%	fdname = '../FlowData/Primary Murine T cell Data';
-%	[ori_data,l,ori_markers]=load_mul_fcs(fdname,'ctr.fcs');
-%	surface_idx = [3 4 6 8 9 11 12 13 22 24 25 27];
-%   data = ori_data(:,surface_idx);
-%   markers = ori_markers(surface_idx);
-%   new_labels = cluster_ungated(data,labels);
-%   
+ 
 
 %% Address input parameters
-if ~exist('threshold','var')
-    threshold = 0.95;
+if ~exist('pre_cluster_perc','var')
+    pre_cluster_perc = 0.95;
 end
 if ~exist('outliers_level','var')
-    outliers_level = 0.9;
+    outliers_level = 0.05;
 end
 if sum(l==0)==0
     new_labels = l;
     return
 end
+
 %% Compute overlap for target population on each dimension
 % One cell is defined to be overlapped with one target population on
 % certain dimension if its intensity on that dimension is between maximum
@@ -35,7 +25,7 @@ unique_l = unique(l);
 unique_l(unique_l==0) = [];
 n_cluster = length(unique_l);
 in_range = zeros(size(data,1),n_cluster*size(data,2));
-
+outliers_level = 1 - outliers_level;
 % figure;
 % k=1;
 for i = 1:length(unique_l)
@@ -84,7 +74,7 @@ total_cells = size(ungated_in_range,1);
 s = 0;
 for i = 1:length(sorted_freq_pattern)
     s = s + sorted_freq_pattern(i);
-    if s >= total_cells * threshold || sorted_freq_pattern(i)<20%(length(unique(l))-1)*size(data,2)
+    if s >= total_cells * pre_cluster_perc || sorted_freq_pattern(i)<20%(length(unique(l))-1)*size(data,2)
         break
     end
 end

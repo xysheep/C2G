@@ -4,7 +4,7 @@ Here is an example of how to run C2G: https://xysheep.github.io/C2G/
 
 Download newest version of C2G: https://github.com/xysheep/C2G/releases
 
-### Quick Start
+## Quick Start
 If you already have MATLAB installed on your computer you can try the quick start. Given you have one flow or mass cytometry data in fcs format and you want to visualize cell populations defined by kmeans, you can do it using the following code. In the transformation step, cofactor should be 5 for mass cytometry data and 100 for flow cytometry data.
 ```MATLAB
 [~,markers,~,~,compensated_data] = readfcs_v2(filename);
@@ -31,22 +31,22 @@ m.view_gates(transformed_data);
 % See statistics of the results
 m.show_f_score(label);
 ```
-### Installation
+## Installation
 In general, you need to have MATLAB installed and directory of "libs" and "src" in your MATLAB path. You can ensure it by following steps. 
 1. Have a MATLAB installed on your computer
 2. Download the most recent release of C2G from [here](https://github.com/xysheep/C2G/releases)
 3. Unzip the downloaded folder to the place you like
 4. In MATLAB, go to the unzipped folder
 5. Right click the "libs" and "src" folder and choose "add to path"
-### Parameters
+## Parameters
 C2G has the following hyperparameter that you can tune according to the shape of your data. 
-##### function cluster_ungated
+### function cluster_ungated
 **pre_cluster_perc** Minimum percentage of unlabeled cells that should be pre-clustered. Default is 0.95. 
 
 **outlier_level** Percentage of low density cells of target populations ignored when decide whether a unlabeled cells overlaped with target populations. Default is 0.05. 
-##### function C2G
+### function C2G
 **'showdetail'** Whether to show the f-score of each cell populations after each iteration. Default is true. 
-##### function gatingTree.view_gates
+### function gatingTree.view_gates
 **'fontsize'** Default is 20. 
 
 **'n_lines'** Number of rows in output figures that have multiple panels. Default is 3. 

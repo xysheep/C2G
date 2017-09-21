@@ -1,0 +1,1339 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Generating 2D Gating Hierarhcy from Clustered Cytometry Data</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-09-20"><meta name="DC.source" content="demo.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Generating 2D Gating Hierarhcy from Clustered Cytometry Data</h1><!--introduction--><p>Our algorithm cluster-to-gates(C2G) can visualize a clustered cytometry data in 2D gating hierarchy. The overall input to C2G are two variables: "data" and "label". "data" is a N-by-M matrix where N is the number of cells and M is the number of markers. "label" is a N-by-1 matrix and this matrix represent which cluster each cell belongs to (0 for ungated cells).  In this page, we will demonstrate how to use C2G to generate gating hierarchy on a simulated data and on a CyTOF dataset that are manually gated. The software and testing data can be downloaded <a href="https://github.com/xysheep/C2G/releases">here</a> .</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Initialization and load the simulated data</a></li><li><a href="#2">Visualize the simulated data and pre-clustered simulated data in 3D</a></li><li><a href="#3">Run the analysis on the simulated data</a></li><li><a href="#4">Load a moderate-sized CyTOF dataset with ~10,1000 cells</a></li><li><a href="#5">Generate gating hierarchy for manually gated populations</a></li><li><a href="#6">Generate gating hierarchy for K-means defined populations (K=10)</a></li><li><a href="#7">Apply C2G to large CyTOF dataset with ~140,000 cells</a></li><li><a href="#8">Reference</a></li></ul></div><h2 id="1">Initialization and load the simulated data</h2><p>This simulated data set contain 20000 cells, which consist of 5 populations.Two of the populations are addressed as known and labeled as 1 and 2. The cells in other populations are labeled 0 which means "ungated". A visualization of the original data is also shown in the following sections.</p><pre class="codeinput">addpath(<span class="string">'src'</span>)
+addpath(<span class="string">'libs'</span>)
+load(<span class="string">'testdata/simulated.mat'</span>,<span class="string">'data'</span>,<span class="string">'label'</span>);
+markernames ={<span class="string">'Marker 1'</span>,<span class="string">'Marker 2'</span>,<span class="string">'Marker 3'</span>};
+fprintf(<span class="string">'Size of "data" is %d-by-%d\n'</span>,size(data));
+fprintf(<span class="string">'Size of "label" is %d-by-%d\n'</span>,size(label));
+</pre><pre class="codeoutput">Size of "data" is 20000-by-3
+Size of "label" is 20000-by-1
+</pre><h2 id="2">Visualize the simulated data and pre-clustered simulated data in 3D</h2><p>In real application, this section is not necessay.</p><pre class="codeinput">col = [0.8 0.8 0.8;hsv(length(unique(label))-1)];
+figure(<span class="string">'Position'</span>,[680 478 560 420]);
+scatter3(data(:,1),data(:,2),data(:,3),1,col(label+1,:));
+xlabel(<span class="string">'Marker 1'</span>)
+ylabel(<span class="string">'Marker 2'</span>)
+zlabel(<span class="string">'Marker 3'</span>)
+axis([-5 15 -5 15 -5 15]);
+</pre><img vspace="5" hspace="5" src="demo_01.png" alt=""> <h2 id="3">Run the analysis on the simulated data</h2><p>This section perform the analysis on the simulated data. If your data have no "ungated" cells, preclustered step can be skipped. If you skip precluster, the second and third parameter in function "C2G" should be the same. Compute local density step is also optional, it can decrease time cost in computing density when you want to try different parameter setting in "C2G". If you skipped it, no need to input the fourth parameter in "C2G".</p><pre class="codeinput"><span class="comment">% Precluster the simulated data</span>
+rng(9464);
+preclustered_label = cluster_ungated(data,label);
+
+<span class="comment">% Call main part of the program and return a object m that store the</span>
+<span class="comment">% results. The option "ignore_ratio" mean percentage of low density cells</span>
+<span class="comment">% ignored when compute overlap between different populations</span>
+
+m = C2G(data,preclustered_label,label,<span class="string">'markernames'</span>,markernames);
+<span class="comment">% Draw the obtained gating hierarchy</span>
+<span class="comment">% Show statistics</span>
+m.view_gates(data,markernames,<span class="string">'n_lines'</span>,1,<span class="string">'onepanel'</span>,true);
+outtable = m.show_f_score(label);
+</pre><pre class="codeoutput">Step:  0	[100%]
+[Selected] marker pair Marker 2 and Marker 3
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   1	  5411	 14589	     0	  0.426
+         2	   1	  9166	 10834	     0	  0.629
+Normalized Mutual Information = 0.321
+Step:  1	[100%]
+[Selected] marker pair Marker 1 and Marker 2
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   2	  5411	  9183	     0	  0.541
+         2	   2	  9166	  5428	     0	  0.772
+Normalized Mutual Information = 0.736
+Step:  2	[100%]No further separation. Node 3 is gate for cell population 1
+Step:  3	[100%]No further separation. Node 4 is gate for cell population 2
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   3	  5411	    18	     0	  0.998
+         2	   4	  9166	     1	     0	  1.000
+Normalized Mutual Information = 0.996
+</pre><img vspace="5" hspace="5" src="demo_02.png" alt=""> <h2 id="4">Load a moderate-sized CyTOF dataset with ~10,1000 cells</h2><p>This is a dataset about T cell signaling (Krishnaswamy et al, Science, 2014). It can be downloaded from <a href="https://www.c2b2.columbia.edu/danapeerlab/html/dremi-data.html">here</a>. This section will read multiple fcs files. Each fcs file correspond to one cell population. C2G will automatically generate cell labels based on fsc files. FCS files are store in the "testdata" folder. "CD4_Effmen.fcs", "CD4_naive.fcs", and "CD8_naive.fcs" are cells of target populations and "ctr.fcs" contain all cells. In this example, we only use surface protein markers.</p><pre class="codeinput">clear
+close <span class="string">all</span>
+addpath(<span class="string">'src'</span>)
+addpath(<span class="string">'libs'</span>)
+fdname = <span class="string">'testdata'</span>;
+[ori_data,ori_l,ori_markers]=load_mul_fcs(fdname,<span class="string">'ctr.fcs'</span>);
+
+surface_idx = [3 4 6 8 9 11 12 13 22 24 25 27];
+data = ori_data(:,surface_idx);
+markers = ori_markers(surface_idx);
+n_markers = length(markers);
+</pre><h2 id="5">Generate gating hierarchy for manually gated populations</h2><pre class="codeinput"><span class="comment">% Precluster the ungated cells</span>
+rng(9464)
+label = cluster_ungated(data,ori_l);
+<span class="comment">% Perform the anlysis</span>
+m_ori = C2G(data,label,ori_l,<span class="string">'markernames'</span>,markers);
+<span class="comment">% Visualize the results</span>
+m_ori.view_gates(data,markers,<span class="string">'n_lines'</span>,3,<span class="string">'ignore_small'</span>,0,<span class="string">'onepanel'</span>,true);
+m_ori.show_f_score(ori_l);
+</pre><pre class="codeoutput">Step:  0	[100%]
+[Selected] marker pair CD25 and TCRb
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   1	   224	  9540	     0	  0.045
+         2	   1	  2345	  7419	     0	  0.387
+         3	   1	   525	  9239	     0	  0.102
+Normalized Mutual Information = 0.229
+Step:  1	[100%]
+[Selected] marker pair CD25 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   2	   216	  4846	     8	  0.082
+         2	   2	  2276	  2786	    69	  0.615
+         3	   2	   491	  4571	    34	  0.176
+Normalized Mutual Information = 0.441
+Step:  2	[100%]
+[Selected] marker pair CD4 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   4	   216	   148	     8	  0.735
+         2	   3	  2267	  1264	    78	  0.772
+         3	   3	   488	  3043	    37	  0.241
+Normalized Mutual Information = 0.634
+Step:  3	[100%]
+[Selected] marker pair CD4 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   4	   216	   148	     8	  0.735
+         2	   5	  2267	   160	    78	  0.950
+         3	   6	   488	    46	    37	  0.922
+Normalized Mutual Information = 0.831
+Step:  4	[100%]
+[Selected] marker pair CD19 and CD25
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   7	   216	    13	     8	  0.954
+         2	   5	  2267	   160	    78	  0.950
+         3	   6	   488	    46	    37	  0.922
+Normalized Mutual Information = 0.858
+Step:  5	[100%]No further separation. Node 6 is gate for cell population 3
+Step:  6	[100%]No further separation. Node 7 is gate for cell population 1
+Step:  7	[100%]No further separation. Node 8 is gate for cell population 2
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   7	   216	    13	     8	  0.954
+         2	   8	  2267	    30	    78	  0.977
+         3	   6	   488	    46	    37	  0.922
+Normalized Mutual Information = 0.893
+</pre><img vspace="5" hspace="5" src="demo_03.png" alt=""> <h2 id="6">Generate gating hierarchy for K-means defined populations (K=10)</h2><pre class="codeinput">rng(9464)
+km_l = kmeans(data,10);
+new_km_l = km_l; <span class="comment">% Since all populiations is known, no need to pre-cluster</span>
+<span class="comment">% Perform the anlysis</span>
+m_km = C2G(data,km_l,km_l,<span class="string">'markernames'</span>,markers);
+<span class="comment">% Visualize the results</span>
+m_km.view_gates(data,markers,<span class="string">'n_lines'</span>,4,<span class="string">'ignore_small'</span>,200);
+m_km.show_f_score(km_l);
+</pre><pre class="codeoutput">Step:  0	[100%]
+[Selected] marker pair CD4 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   1	   788	  8976	     0	  0.149
+         2	   1	   913	  8851	     0	  0.171
+         3	   1	  1289	  8475	     0	  0.233
+         4	   1	  2130	  7634	     0	  0.358
+         5	   1	  1492	  8272	     0	  0.265
+         6	   1	  1371	  8393	     0	  0.246
+         7	   1	   752	  9012	     0	  0.143
+         8	   1	   156	  9608	     0	  0.031
+         9	   1	   655	  9109	     0	  0.126
+        10	   1	   218	  9546	     0	  0.044
+Normalized Mutual Information = 0.000
+Step:  1	[100%]
+[Selected] marker pair CD4 and TCRb
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   2	   788	  4779	     0	  0.248
+         2	   3	   913	  3535	     0	  0.341
+         3	   2	  1289	  4278	     0	  0.376
+         4	   3	  2130	  2318	     0	  0.648
+         5	   2	  1492	  4075	     0	  0.423
+         6	   3	  1371	  3077	     0	  0.471
+         7	   2	   752	  4815	     0	  0.238
+         8	   2	   156	  5411	     0	  0.055
+         9	   2	   655	  4912	     0	  0.211
+        10	   2	   218	  5349	     0	  0.075
+Normalized Mutual Information = 0.000
+Step:  2	[100%]
+[Selected] marker pair Ikba and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   4	   788	  4611	     0	  0.255
+         2	   3	   913	  3535	     0	  0.341
+         3	   4	  1289	  4110	     0	  0.385
+         4	   3	  2130	  2318	     0	  0.648
+         5	   4	  1492	  3907	     0	  0.433
+         6	   3	  1371	  3077	     0	  0.471
+         7	   4	   752	  4647	     0	  0.245
+         8	   4	   156	  5243	     0	  0.056
+         9	   4	   655	  4744	     0	  0.216
+        10	   4	   218	  5181	     0	  0.078
+Normalized Mutual Information = 0.000
+Step:  3	[100%]
+[Selected] marker pair CD5 and CD8
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   4	   788	  4611	     0	  0.255
+         2	   5	   881	  2224	    32	  0.439
+         3	   4	  1289	  4110	     0	  0.385
+         4	   5	  1985	  1120	   145	  0.758
+         5	   4	  1492	  3907	     0	  0.433
+         6	   6	  1206	   448	   165	  0.797
+         7	   4	   752	  4647	     0	  0.245
+         8	   4	   156	  5243	     0	  0.056
+         9	   4	   655	  4744	     0	  0.216
+        10	   4	   218	  5181	     0	  0.078
+Normalized Mutual Information = 0.544
+Step:  4	[100%]
+[Selected] marker pair Ikba and TCRb
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   7	   788	  3002	     0	  0.344
+         2	   5	   881	  2224	    32	  0.439
+         3	   7	  1289	  2501	     0	  0.508
+         4	   5	  1985	  1120	   145	  0.758
+         5	   7	  1492	  2298	     0	  0.565
+         6	   6	  1206	   448	   165	  0.797
+         7	   8	   733	   877	    19	  0.621
+         8	   7	   156	  3634	     0	  0.079
+         9	   8	   630	   980	    25	  0.556
+        10	   8	   213	  1397	     5	  0.233
+Normalized Mutual Information = 0.654
+Step:  5	[100%]
+[Selected] marker pair CD5 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   7	   788	  3002	     0	  0.344
+         2	   9	   818	   179	    95	  0.857
+         3	   7	  1289	  2501	     0	  0.508
+         4	  10	  1900	   371	   230	  0.863
+         5	   7	  1492	  2298	     0	  0.565
+         6	   6	  1206	   448	   165	  0.797
+         7	   8	   733	   877	    19	  0.621
+         8	   7	   156	  3634	     0	  0.079
+         9	   8	   630	   980	    25	  0.556
+        10	   8	   213	  1397	     5	  0.233
+Normalized Mutual Information = 0.667
+Step:  6	[100%]
+[Selected] marker pair CD5 and CD19
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   7	   788	  3002	     0	  0.344
+         2	   9	   818	   179	    95	  0.857
+         3	   7	  1289	  2501	     0	  0.508
+         4	  10	  1900	   371	   230	  0.863
+         5	   7	  1492	  2298	     0	  0.565
+         6	  11	  1180	   200	   191	  0.858
+         7	   8	   733	   877	    19	  0.621
+         8	   7	   156	  3634	     0	  0.079
+         9	   8	   630	   980	    25	  0.556
+        10	   8	   213	  1397	     5	  0.233
+Normalized Mutual Information = 0.680
+Step:  7	[100%]
+[Selected] marker pair CD5 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  12	   788	  2997	     0	  0.345
+         2	   9	   818	   179	    95	  0.857
+         3	  12	  1289	  2496	     0	  0.508
+         4	  10	  1900	   371	   230	  0.863
+         5	  12	  1492	  2293	     0	  0.565
+         6	  11	  1180	   200	   191	  0.858
+         7	   8	   733	   877	    19	  0.621
+         8	  13	   138	   121	    18	  0.665
+         9	   8	   630	   980	    25	  0.556
+        10	   8	   213	  1397	     5	  0.233
+Normalized Mutual Information = 0.682
+Step:  8	[100%]
+[Selected] marker pair CD5 and Ikba
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  12	   788	  2997	     0	  0.345
+         2	   9	   818	   179	    95	  0.857
+         3	  12	  1289	  2496	     0	  0.508
+         4	  10	  1900	   371	   230	  0.863
+         5	  12	  1492	  2293	     0	  0.565
+         6	  11	  1180	   200	   191	  0.858
+         7	  14	   733	   645	    19	  0.688
+         8	  13	   138	   121	    18	  0.665
+         9	  14	   630	   748	    25	  0.620
+        10	  15	   213	    45	     5	  0.895
+Normalized Mutual Information = 0.699
+Step:  9	[100%]
+[Selected] marker pair TCRb and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  12	   788	  2997	     0	  0.345
+         2	  16	   798	   139	   115	  0.863
+         3	  12	  1289	  2496	     0	  0.508
+         4	  10	  1900	   371	   230	  0.863
+         5	  12	  1492	  2293	     0	  0.565
+         6	  11	  1180	   200	   191	  0.858
+         7	  14	   733	   645	    19	  0.688
+         8	  13	   138	   121	    18	  0.665
+         9	  14	   630	   748	    25	  0.620
+        10	  15	   213	    45	     5	  0.895
+Normalized Mutual Information = 0.700
+Step: 10	[100%]
+[Selected] marker pair CD25 and TCRb
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  12	   788	  2997	     0	  0.345
+         2	  16	   798	   139	   115	  0.863
+         3	  12	  1289	  2496	     0	  0.508
+         4	  17	  1882	   305	   248	  0.872
+         5	  12	  1492	  2293	     0	  0.565
+         6	  11	  1180	   200	   191	  0.858
+         7	  14	   733	   645	    19	  0.688
+         8	  13	   138	   121	    18	  0.665
+         9	  14	   630	   748	    25	  0.620
+        10	  15	   213	    45	     5	  0.895
+Normalized Mutual Information = 0.702
+Step: 11	[100%]
+[Selected] marker pair CD5 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  12	   788	  2997	     0	  0.345
+         2	  16	   798	   139	   115	  0.863
+         3	  12	  1289	  2496	     0	  0.508
+         4	  17	  1882	   305	   248	  0.872
+         5	  12	  1492	  2293	     0	  0.565
+         6	  18	  1163	   165	   208	  0.862
+         7	  14	   733	   645	    19	  0.688
+         8	  13	   138	   121	    18	  0.665
+         9	  14	   630	   748	    25	  0.620
+        10	  15	   213	    45	     5	  0.895
+Normalized Mutual Information = 0.704
+Step: 12	[100%]
+[Selected] marker pair TCRb and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  19	   788	  2876	     0	  0.354
+         2	  16	   798	   139	   115	  0.863
+         3	  19	  1289	  2375	     0	  0.520
+         4	  17	  1882	   305	   248	  0.872
+         5	  19	  1492	  2172	     0	  0.579
+         6	  18	  1163	   165	   208	  0.862
+         7	  14	   733	   645	    19	  0.688
+         8	  13	   138	   121	    18	  0.665
+         9	  14	   630	   748	    25	  0.620
+        10	  15	   213	    45	     5	  0.895
+Normalized Mutual Information = 0.710
+Step: 13	[100%]
+[Selected] marker pair Ikba and TCRb
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  19	   788	  2876	     0	  0.354
+         2	  16	   798	   139	   115	  0.863
+         3	  19	  1289	  2375	     0	  0.520
+         4	  17	  1882	   305	   248	  0.872
+         5	  19	  1492	  2172	     0	  0.579
+         6	  18	  1163	   165	   208	  0.862
+         7	  14	   733	   645	    19	  0.688
+         8	  20	   138	    12	    18	  0.902
+         9	  14	   630	   748	    25	  0.620
+        10	  15	   213	    45	     5	  0.895
+Normalized Mutual Information = 0.715
+Step: 14	[100%]
+[Selected] marker pair CD45.1 and CD8
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  19	   788	  2876	     0	  0.354
+         2	  16	   798	   139	   115	  0.863
+         3	  19	  1289	  2375	     0	  0.520
+         4	  17	  1882	   305	   248	  0.872
+         5	  19	  1492	  2172	     0	  0.579
+         6	  18	  1163	   165	   208	  0.862
+         7	  21	   714	    27	    38	  0.956
+         8	  20	   138	    12	    18	  0.902
+         9	  22	   609	    38	    46	  0.935
+        10	  15	   213	    45	     5	  0.895
+Normalized Mutual Information = 0.733
+Step: 15	[100%]No further separation. Node 16 is gate for cell population 2
+Step: 16	[100%]
+[Selected] marker pair CD25 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  19	   788	  2876	     0	  0.354
+         2	  16	   798	   139	   115	  0.863
+         3	  19	  1289	  2375	     0	  0.520
+         4	  17	  1882	   305	   248	  0.872
+         5	  19	  1492	  2172	     0	  0.579
+         6	  18	  1163	   165	   208	  0.862
+         7	  21	   714	    27	    38	  0.956
+         8	  20	   138	    12	    18	  0.902
+         9	  22	   609	    38	    46	  0.935
+        10	  23	   192	    15	    26	  0.904
+Normalized Mutual Information = 0.733
+Step: 17	[100%]No further separation. Node 18 is gate for cell population 6
+Step: 18	[100%]
+[Selected] marker pair CD19 and Ikba
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  19	   788	  2876	     0	  0.354
+         2	  16	   798	   139	   115	  0.863
+         3	  19	  1289	  2375	     0	  0.520
+         4	  24	  1853	   243	   277	  0.877
+         5	  19	  1492	  2172	     0	  0.579
+         6	  18	  1163	   165	   208	  0.862
+         7	  21	   714	    27	    38	  0.956
+         8	  20	   138	    12	    18	  0.902
+         9	  22	   609	    38	    46	  0.935
+        10	  23	   192	    15	    26	  0.904
+Normalized Mutual Information = 0.735
+Step: 19	[100%]No further separation. Node 20 is gate for cell population 8
+Step: 20	[100%]No further separation. Node 21 is gate for cell population 7
+Step: 21	[100%]No further separation. Node 22 is gate for cell population 9
+Step: 22	[100%]No further separation. Node 23 is gate for cell population 10
+Step: 23	[100%]No further separation. Node 24 is gate for cell population 4
+Step: 24	[100%]
+[Selected] marker pair Ikba and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  25	   769	   514	    19	  0.743
+         2	  16	   798	   139	   115	  0.863
+         3	  26	  1269	  1724	    20	  0.593
+         4	  24	  1853	   243	   277	  0.877
+         5	  26	  1465	  1528	    27	  0.653
+         6	  18	  1163	   165	   208	  0.862
+         7	  21	   714	    27	    38	  0.956
+         8	  20	   138	    12	    18	  0.902
+         9	  22	   609	    38	    46	  0.935
+        10	  23	   192	    15	    26	  0.904
+Normalized Mutual Information = 0.733
+Step: 25	[100%]
+[Selected] marker pair CD19 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  27	   746	   155	    42	  0.883
+         2	  16	   798	   139	   115	  0.863
+         3	  26	  1269	  1724	    20	  0.593
+         4	  24	  1853	   243	   277	  0.877
+         5	  26	  1465	  1528	    27	  0.653
+         6	  18	  1163	   165	   208	  0.862
+         7	  21	   714	    27	    38	  0.956
+         8	  20	   138	    12	    18	  0.902
+         9	  22	   609	    38	    46	  0.935
+        10	  23	   192	    15	    26	  0.904
+Normalized Mutual Information = 0.750
+Step: 26	[100%]No further separation. Node 27 is gate for cell population 1
+Step: 27	[100%]
+[Selected] marker pair Ikba and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  27	   746	   155	    42	  0.883
+         2	  16	   798	   139	   115	  0.863
+         3	  28	  1247	   509	    42	  0.819
+         4	  24	  1853	   243	   277	  0.877
+         5	  29	  1432	   198	    60	  0.917
+         6	  18	  1163	   165	   208	  0.862
+         7	  21	   714	    27	    38	  0.956
+         8	  20	   138	    12	    18	  0.902
+         9	  22	   609	    38	    46	  0.935
+        10	  23	   192	    15	    26	  0.904
+Normalized Mutual Information = 0.765
+Step: 28	[100%]
+[Selected] marker pair CD19 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  27	   746	   155	    42	  0.883
+         2	  16	   798	   139	   115	  0.863
+         3	  30	  1233	   292	    56	  0.876
+         4	  24	  1853	   243	   277	  0.877
+         5	  29	  1432	   198	    60	  0.917
+         6	  18	  1163	   165	   208	  0.862
+         7	  21	   714	    27	    38	  0.956
+         8	  20	   138	    12	    18	  0.902
+         9	  22	   609	    38	    46	  0.935
+        10	  23	   192	    15	    26	  0.904
+Normalized Mutual Information = 0.775
+Step: 29	[100%]
+[Selected] marker pair CD19 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  27	   746	   155	    42	  0.883
+         2	  16	   798	   139	   115	  0.863
+         3	  30	  1233	   292	    56	  0.876
+         4	  24	  1853	   243	   277	  0.877
+         5	  31	  1418	   161	    74	  0.923
+         6	  18	  1163	   165	   208	  0.862
+         7	  21	   714	    27	    38	  0.956
+         8	  20	   138	    12	    18	  0.902
+         9	  22	   609	    38	    46	  0.935
+        10	  23	   192	    15	    26	  0.904
+Normalized Mutual Information = 0.776
+Step: 30	[100%]No further separation. Node 31 is gate for cell population 5
+Step: 31	[100%]No further separation. Node 32 is gate for cell population 3
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  27	   746	   155	    42	  0.883
+         2	  16	   798	   139	   115	  0.863
+         3	  32	  1204	   176	    85	  0.902
+         4	  24	  1853	   243	   277	  0.877
+         5	  31	  1418	   161	    74	  0.923
+         6	  18	  1163	   165	   208	  0.862
+         7	  21	   714	    27	    38	  0.956
+         8	  20	   138	    12	    18	  0.902
+         9	  22	   609	    38	    46	  0.935
+        10	  23	   192	    15	    26	  0.904
+Normalized Mutual Information = 0.780
+</pre><img vspace="5" hspace="5" src="demo_04.png" alt=""> <img vspace="5" hspace="5" src="demo_05.png" alt=""> <h2 id="7">Apply C2G to large CyTOF dataset with ~140,000 cells</h2><p>This is a larger CyTOF dataset with 140k cells and 21 protein markers (Spitzer, Matthew H., et al, Science, 2015 ). This data can be download from <a href="https://community.cytobank.org/cytobank/experiments/60068">here</a> This dataset is clustered by k-means where k equal to 10. This part will take around 10 minutes on a desktop.</p><pre class="codeinput">[ori_data, marker] = readfcs_v2(<span class="string">'testdata/bigdata/TIN_BLD1_Untreated_Day3.fcs'</span>);
+<span class="comment">% Transform the CyTOF</span>
+data = flow_arcsinh(ori_data,5);
+<span class="comment">% Select protein markers</span>
+marker_idx = [10,16,17,18,19,21,22,24,29,31,32,33,39,40,41,46,47,49,50,51,52];
+d = data(marker_idx,:)';
+rng(9464);
+label = kmeans(d,10);
+<span class="comment">% Perform the anlysis</span>
+tic;m = C2G(d, label, label,<span class="string">'markernames'</span>,marker(marker_idx));toc;
+<span class="comment">% Visualize the results</span>
+w = warning (<span class="string">'off'</span>,<span class="string">'all'</span>);
+m.view_gates(d,marker(marker_idx),<span class="string">'ignore_small'</span>,3000,<span class="string">'n_lines'</span>,4);
+warning(w);
+m.show_f_score(label);
+</pre><pre class="codeoutput">Step:  0	[100%]
+[Selected] marker pair CD8 and CD4
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   1	 16562	125309	     0	  0.209
+         2	   1	  7227	134644	     0	  0.097
+         3	   1	 12201	129670	     0	  0.158
+         4	   1	 20135	121736	     0	  0.249
+         5	   1	 10997	130874	     0	  0.144
+         6	   1	 14205	127666	     0	  0.182
+         7	   1	 13766	128105	     0	  0.177
+         8	   1	 30857	111014	     0	  0.357
+         9	   1	  7391	134480	     0	  0.099
+        10	   1	  8530	133341	     0	  0.113
+Normalized Mutual Information = 0.000
+Step:  1	[100%]
+[Selected] marker pair CD11b and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   3	 16470	110942	    92	  0.229
+         2	   3	  7227	120185	     0	  0.107
+         3	   3	 12022	115390	   179	  0.172
+         4	   3	 20130	107282	     5	  0.273
+         5	   3	 10990	116422	     7	  0.159
+         6	   3	 14169	113243	    36	  0.200
+         7	   2	 13324	   126	   442	  0.979
+         8	   3	 30451	 96961	   406	  0.385
+         9	   3	  7376	120036	    15	  0.109
+        10	   3	  8499	118913	    31	  0.125
+Normalized Mutual Information = 0.349
+Step:  2	[100%]
+[Selected] marker pair IgD and CD3
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   3	 16470	110942	    92	  0.229
+         2	   3	  7227	120185	     0	  0.107
+         3	   3	 12022	115390	   179	  0.172
+         4	   3	 20130	107282	     5	  0.273
+         5	   3	 10990	116422	     7	  0.159
+         6	   3	 14169	113243	    36	  0.200
+         7	   4	 13324	    35	   442	  0.982
+         8	   3	 30451	 96961	   406	  0.385
+         9	   3	  7376	120036	    15	  0.109
+        10	   3	  8499	118913	    31	  0.125
+Normalized Mutual Information = 0.350
+Step:  3	[100%]No further separation. Node 4 is gate for cell population 7
+Step:  4	[100%]
+[Selected] marker pair CD16.32 and CD3
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   5	 16470	 31387	    92	  0.511
+         2	   6	  7219	 72557	     8	  0.166
+         3	   6	 11854	 67922	   347	  0.258
+         4	   6	 20093	 59683	    42	  0.402
+         5	   6	 10782	 68994	   215	  0.238
+         6	   6	 14048	 65728	   157	  0.299
+         7	   4	 13324	    35	   442	  0.982
+         8	   5	 30451	 17406	   406	  0.774
+         9	   6	  7249	 72527	   142	  0.166
+        10	   6	  8437	 71339	    93	  0.191
+Normalized Mutual Information = 0.602
+Step:  5	[100%]
+[Selected] marker pair CD3 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   7	 16470	 31108	    92	  0.514
+         2	   6	  7219	 72557	     8	  0.166
+         3	   6	 11854	 67922	   347	  0.258
+         4	   6	 20093	 59683	    42	  0.402
+         5	   6	 10782	 68994	   215	  0.238
+         6	   6	 14048	 65728	   157	  0.299
+         7	   4	 13324	    35	   442	  0.982
+         8	   7	 30451	 17127	   406	  0.776
+         9	   6	  7249	 72527	   142	  0.166
+        10	   6	  8437	 71339	    93	  0.191
+Normalized Mutual Information = 0.605
+Step:  6	[100%]
+[Selected] marker pair CD11b and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   7	 16470	 31108	    92	  0.514
+         2	   8	  7219	 72479	     8	  0.166
+         3	   8	 11854	 67844	   347	  0.258
+         4	   8	 20093	 59605	    42	  0.403
+         5	   8	 10782	 68916	   215	  0.238
+         6	   8	 14048	 65650	   157	  0.299
+         7	   4	 13324	    35	   442	  0.982
+         8	   7	 30451	 17127	   406	  0.776
+         9	   8	  7249	 72449	   142	  0.166
+        10	   8	  8437	 71261	    93	  0.191
+Normalized Mutual Information = 0.606
+Step:  7	[100%]
+[Selected] marker pair CD49b and IgM
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   9	 16470	 30802	    92	  0.516
+         2	   8	  7219	 72479	     8	  0.166
+         3	   8	 11854	 67844	   347	  0.258
+         4	   8	 20093	 59605	    42	  0.403
+         5	   8	 10782	 68916	   215	  0.238
+         6	   8	 14048	 65650	   157	  0.299
+         7	   4	 13324	    35	   442	  0.982
+         8	   9	 30451	 16821	   406	  0.780
+         9	   8	  7249	 72449	   142	  0.166
+        10	   8	  8437	 71261	    93	  0.191
+Normalized Mutual Information = 0.610
+Step:  8	[100%]
+[Selected] marker pair CD3 and IgM
+Population	Gate	    TP	    FP	    FN	F-score
+         1	   9	 16470	 30802	    92	  0.516
+         2	  10	  7131	 65163	    96	  0.179
+         3	  10	 11694	 60600	   507	  0.277
+         4	  10	 19783	 52511	   352	  0.428
+         5	  10	 10768	 61526	   229	  0.259
+         6	  10	 14033	 58261	   172	  0.324
+         7	   4	 13324	    35	   442	  0.982
+         8	   9	 30451	 16821	   406	  0.780
+         9	  11	  7069	   797	   322	  0.927
+        10	  10	  8395	 63899	   135	  0.208
+Normalized Mutual Information = 0.648
+Step:  9	[100%]
+[Selected] marker pair CD45 and CD16.32
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  12	 16470	 30740	    92	  0.517
+         2	  10	  7131	 65163	    96	  0.179
+         3	  10	 11694	 60600	   507	  0.277
+         4	  10	 19783	 52511	   352	  0.428
+         5	  10	 10768	 61526	   229	  0.259
+         6	  10	 14033	 58261	   172	  0.324
+         7	   4	 13324	    35	   442	  0.982
+         8	  12	 30451	 16759	   406	  0.780
+         9	  11	  7069	   797	   322	  0.927
+        10	  10	  8395	 63899	   135	  0.208
+Normalized Mutual Information = 0.648
+Step: 10	[100%]
+[Selected] marker pair CD16.32 and CD11b
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  12	 16470	 30740	    92	  0.517
+         2	  14	  6820	   754	   407	  0.922
+         3	  13	 11433	 52911	   768	  0.299
+         4	  13	 19736	 44608	   399	  0.467
+         5	  13	 10578	 53766	   419	  0.281
+         6	  13	 14005	 50339	   200	  0.357
+         7	   4	 13324	    35	   442	  0.982
+         8	  12	 30451	 16759	   406	  0.780
+         9	  11	  7069	   797	   322	  0.927
+        10	  13	  8266	 56078	   264	  0.227
+Normalized Mutual Information = 0.688
+Step: 11	[100%]
+[Selected] marker pair CD44 and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  12	 16470	 30740	    92	  0.517
+         2	  14	  6820	   754	   407	  0.922
+         3	  13	 11433	 52911	   768	  0.299
+         4	  13	 19736	 44608	   399	  0.467
+         5	  13	 10578	 53766	   419	  0.281
+         6	  13	 14005	 50339	   200	  0.357
+         7	   4	 13324	    35	   442	  0.982
+         8	  12	 30451	 16759	   406	  0.780
+         9	  15	  7069	   685	   322	  0.934
+        10	  13	  8266	 56078	   264	  0.227
+Normalized Mutual Information = 0.689
+Step: 12	[100%]
+[Selected] marker pair CD11b and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  16	 15549	  1009	  1013	  0.939
+         2	  14	  6820	   754	   407	  0.922
+         3	  13	 11433	 52911	   768	  0.299
+         4	  13	 19736	 44608	   399	  0.467
+         5	  13	 10578	 53766	   419	  0.281
+         6	  13	 14005	 50339	   200	  0.357
+         7	   4	 13324	    35	   442	  0.982
+         8	  17	 29731	  4262	  1126	  0.917
+         9	  15	  7069	   685	   322	  0.934
+        10	  13	  8266	 56078	   264	  0.227
+Normalized Mutual Information = 0.709
+Step: 13	[100%]
+[Selected] marker pair CD45 and CD11c
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  16	 15549	  1009	  1013	  0.939
+         2	  14	  6820	   754	   407	  0.922
+         3	  19	 11139	 24071	  1062	  0.470
+         4	  18	 19709	  8772	   426	  0.811
+         5	  19	 10243	 24967	   754	  0.443
+         6	  19	 13738	 21472	   467	  0.556
+         7	   4	 13324	    35	   442	  0.982
+         8	  17	 29731	  4262	  1126	  0.917
+         9	  15	  7069	   685	   322	  0.934
+        10	  18	  8160	 20321	   370	  0.441
+Normalized Mutual Information = 0.789
+Step: 14	[100%]
+[Selected] marker pair IgD and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  16	 15549	  1009	  1013	  0.939
+         2	  20	  6820	   658	   407	  0.928
+         3	  19	 11139	 24071	  1062	  0.470
+         4	  18	 19709	  8772	   426	  0.811
+         5	  19	 10243	 24967	   754	  0.443
+         6	  19	 13738	 21472	   467	  0.556
+         7	   4	 13324	    35	   442	  0.982
+         8	  17	 29731	  4262	  1126	  0.917
+         9	  15	  7069	   685	   322	  0.934
+        10	  18	  8160	 20321	   370	  0.441
+Normalized Mutual Information = 0.789
+Step: 15	[100%]
+[Selected] marker pair CD4 and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  16	 15549	  1009	  1013	  0.939
+         2	  20	  6820	   658	   407	  0.928
+         3	  19	 11139	 24071	  1062	  0.470
+         4	  18	 19709	  8772	   426	  0.811
+         5	  19	 10243	 24967	   754	  0.443
+         6	  19	 13738	 21472	   467	  0.556
+         7	   4	 13324	    35	   442	  0.982
+         8	  17	 29731	  4262	  1126	  0.917
+         9	  21	  7069	   625	   322	  0.937
+        10	  18	  8160	 20321	   370	  0.441
+Normalized Mutual Information = 0.790
+Step: 16	[100%]
+[Selected] marker pair IgM and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  22	 15549	   832	  1013	  0.944
+         2	  20	  6820	   658	   407	  0.928
+         3	  19	 11139	 24071	  1062	  0.470
+         4	  18	 19709	  8772	   426	  0.811
+         5	  19	 10243	 24967	   754	  0.443
+         6	  19	 13738	 21472	   467	  0.556
+         7	   4	 13324	    35	   442	  0.982
+         8	  17	 29731	  4262	  1126	  0.917
+         9	  21	  7069	   625	   322	  0.937
+        10	  18	  8160	 20321	   370	  0.441
+Normalized Mutual Information = 0.791
+Step: 17	[100%]
+[Selected] marker pair CD11b and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  22	 15549	   832	  1013	  0.944
+         2	  20	  6820	   658	   407	  0.928
+         3	  19	 11139	 24071	  1062	  0.470
+         4	  18	 19709	  8772	   426	  0.811
+         5	  19	 10243	 24967	   754	  0.443
+         6	  19	 13738	 21472	   467	  0.556
+         7	   4	 13324	    35	   442	  0.982
+         8	  23	 29731	  3503	  1126	  0.928
+         9	  21	  7069	   625	   322	  0.937
+        10	  18	  8160	 20321	   370	  0.441
+Normalized Mutual Information = 0.793
+Step: 18	[100%]
+[Selected] marker pair IgD and CD11b
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  22	 15549	   832	  1013	  0.944
+         2	  20	  6820	   658	   407	  0.928
+         3	  19	 11139	 24071	  1062	  0.470
+         4	  24	 19698	  8585	   437	  0.814
+         5	  19	 10243	 24967	   754	  0.443
+         6	  19	 13738	 21472	   467	  0.556
+         7	   4	 13324	    35	   442	  0.982
+         8	  23	 29731	  3503	  1126	  0.928
+         9	  21	  7069	   625	   322	  0.937
+        10	  24	  8116	 20167	   414	  0.441
+Normalized Mutual Information = 0.794
+Step: 19	[100%]
+[Selected] marker pair CD45 and CD19
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  22	 15549	   832	  1013	  0.944
+         2	  20	  6820	   658	   407	  0.928
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  24	 19698	  8585	   437	  0.814
+         5	  25	 10016	   639	   981	  0.925
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  23	 29731	  3503	  1126	  0.928
+         9	  21	  7069	   625	   322	  0.937
+        10	  24	  8116	 20167	   414	  0.441
+Normalized Mutual Information = 0.821
+Step: 20	[100%]
+[Selected] marker pair IgM and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  22	 15549	   832	  1013	  0.944
+         2	  27	  6808	   594	   419	  0.931
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  24	 19698	  8585	   437	  0.814
+         5	  25	 10016	   639	   981	  0.925
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  23	 29731	  3503	  1126	  0.928
+         9	  21	  7069	   625	   322	  0.937
+        10	  24	  8116	 20167	   414	  0.441
+Normalized Mutual Information = 0.821
+Step: 21	[100%]
+[Selected] marker pair CD44 and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  22	 15549	   832	  1013	  0.944
+         2	  27	  6808	   594	   419	  0.931
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  24	 19698	  8585	   437	  0.814
+         5	  25	 10016	   639	   981	  0.925
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  23	 29731	  3503	  1126	  0.928
+         9	  28	  6993	   460	   398	  0.942
+        10	  24	  8116	 20167	   414	  0.441
+Normalized Mutual Information = 0.821
+Step: 22	[100%]
+[Selected] marker pair CD62L and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  27	  6808	   594	   419	  0.931
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  24	 19698	  8585	   437	  0.814
+         5	  25	 10016	   639	   981	  0.925
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  23	 29731	  3503	  1126	  0.928
+         9	  28	  6993	   460	   398	  0.942
+        10	  24	  8116	 20167	   414	  0.441
+Normalized Mutual Information = 0.823
+Step: 23	[100%]
+[Selected] marker pair CD11b and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  27	  6808	   594	   419	  0.931
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  24	 19698	  8585	   437	  0.814
+         5	  25	 10016	   639	   981	  0.925
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  30	 29731	  3215	  1126	  0.932
+         9	  28	  6993	   460	   398	  0.942
+        10	  24	  8116	 20167	   414	  0.441
+Normalized Mutual Information = 0.823
+Step: 24	[100%]
+[Selected] marker pair CD115 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  27	  6808	   594	   419	  0.931
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  31	 19682	  8492	   453	  0.815
+         5	  25	 10016	   639	   981	  0.925
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  30	 29731	  3215	  1126	  0.932
+         9	  28	  6993	   460	   398	  0.942
+        10	  31	  8082	 20092	   448	  0.440
+Normalized Mutual Information = 0.824
+Step: 25	[100%]No further separation. Node 26 is gate for cell population 3  6
+Step: 26	[100%]
+[Selected] marker pair CD45 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  27	  6808	   594	   419	  0.931
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  31	 19682	  8492	   453	  0.815
+         5	  32	 10016	   583	   981	  0.928
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  30	 29731	  3215	  1126	  0.932
+         9	  28	  6993	   460	   398	  0.942
+        10	  31	  8082	 20092	   448	  0.440
+Normalized Mutual Information = 0.824
+Step: 27	[100%]No further separation. Node 28 is gate for cell population 9
+Step: 28	[100%]No further separation. Node 29 is gate for cell population 1
+Step: 29	[100%]
+[Selected] marker pair CD8 and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  33	  6791	   535	   436	  0.933
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  31	 19682	  8492	   453	  0.815
+         5	  32	 10016	   583	   981	  0.928
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  30	 29731	  3215	  1126	  0.932
+         9	  28	  6993	   460	   398	  0.942
+        10	  31	  8082	 20092	   448	  0.440
+Normalized Mutual Information = 0.824
+Step: 30	[100%]
+[Selected] marker pair CD45 and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  33	  6791	   535	   436	  0.933
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  31	 19682	  8492	   453	  0.815
+         5	  32	 10016	   583	   981	  0.928
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  34	 29731	  2117	  1126	  0.948
+         9	  28	  6993	   460	   398	  0.942
+        10	  31	  8082	 20092	   448	  0.440
+Normalized Mutual Information = 0.829
+Step: 31	[100%]
+[Selected] marker pair IgD and CD11b
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  33	  6791	   535	   436	  0.933
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  35	 19665	  8303	   470	  0.818
+         5	  32	 10016	   583	   981	  0.928
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  34	 29731	  2117	  1126	  0.948
+         9	  28	  6993	   460	   398	  0.942
+        10	  35	  8018	 19950	   512	  0.439
+Normalized Mutual Information = 0.829
+Step: 32	[100%]
+[Selected] marker pair CD45 and IgM
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  33	  6791	   535	   436	  0.933
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  35	 19665	  8303	   470	  0.818
+         5	  36	  9980	   522	  1017	  0.928
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  34	 29731	  2117	  1126	  0.948
+         9	  28	  6993	   460	   398	  0.942
+        10	  35	  8018	 19950	   512	  0.439
+Normalized Mutual Information = 0.829
+Step: 33	[100%]
+[Selected] marker pair CD103 and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  37	  6763	   451	   464	  0.937
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  35	 19665	  8303	   470	  0.818
+         5	  36	  9980	   522	  1017	  0.928
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  34	 29731	  2117	  1126	  0.948
+         9	  28	  6993	   460	   398	  0.942
+        10	  35	  8018	 19950	   512	  0.439
+Normalized Mutual Information = 0.829
+Step: 34	[100%]
+[Selected] marker pair IgD and IgM
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  37	  6763	   451	   464	  0.937
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  35	 19665	  8303	   470	  0.818
+         5	  36	  9980	   522	  1017	  0.928
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  38	 29731	  1866	  1126	  0.952
+         9	  28	  6993	   460	   398	  0.942
+        10	  35	  8018	 19950	   512	  0.439
+Normalized Mutual Information = 0.830
+Step: 35	[100%]
+[Selected] marker pair IgD and CD11b
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  37	  6763	   451	   464	  0.937
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  39	 19313	   166	   822	  0.975
+         5	  36	  9980	   522	  1017	  0.928
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  38	 29731	  1866	  1126	  0.952
+         9	  28	  6993	   460	   398	  0.942
+        10	  40	  7989	   749	   541	  0.925
+Normalized Mutual Information = 0.853
+Step: 36	[100%]
+[Selected] marker pair CD16.32 and IgM
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  37	  6763	   451	   464	  0.937
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  39	 19313	   166	   822	  0.975
+         5	  41	  9965	   481	  1032	  0.929
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  38	 29731	  1866	  1126	  0.952
+         9	  28	  6993	   460	   398	  0.942
+        10	  40	  7989	   749	   541	  0.925
+Normalized Mutual Information = 0.854
+Step: 37	[100%]
+[Selected] marker pair IgD and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  42	  6728	   401	   499	  0.937
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  39	 19313	   166	   822	  0.975
+         5	  41	  9965	   481	  1032	  0.929
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  38	 29731	  1866	  1126	  0.952
+         9	  28	  6993	   460	   398	  0.942
+        10	  40	  7989	   749	   541	  0.925
+Normalized Mutual Information = 0.854
+Step: 38	[100%]
+[Selected] marker pair IgD and CD19
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  42	  6728	   401	   499	  0.937
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  39	 19313	   166	   822	  0.975
+         5	  41	  9965	   481	  1032	  0.929
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  43	 29731	  1814	  1126	  0.953
+         9	  28	  6993	   460	   398	  0.942
+        10	  40	  7989	   749	   541	  0.925
+Normalized Mutual Information = 0.854
+Step: 39	[100%]
+[Selected] marker pair IgD and IgM
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  42	  6728	   401	   499	  0.937
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  41	  9965	   481	  1032	  0.929
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  43	 29731	  1814	  1126	  0.953
+         9	  28	  6993	   460	   398	  0.942
+        10	  40	  7989	   749	   541	  0.925
+Normalized Mutual Information = 0.854
+Step: 40	[100%]
+[Selected] marker pair IgD and CD8
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  42	  6728	   401	   499	  0.937
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  41	  9965	   481	  1032	  0.929
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  43	 29731	  1814	  1126	  0.953
+         9	  28	  6993	   460	   398	  0.942
+        10	  45	  7981	   688	   549	  0.928
+Normalized Mutual Information = 0.855
+Step: 41	[100%]
+[Selected] marker pair IgM and CD44
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  42	  6728	   401	   499	  0.937
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  46	  9902	   410	  1095	  0.929
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  43	 29731	  1814	  1126	  0.953
+         9	  28	  6993	   460	   398	  0.942
+        10	  45	  7981	   688	   549	  0.928
+Normalized Mutual Information = 0.855
+Step: 42	[100%]
+[Selected] marker pair CD138 and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  46	  9902	   410	  1095	  0.929
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  43	 29731	  1814	  1126	  0.953
+         9	  28	  6993	   460	   398	  0.942
+        10	  45	  7981	   688	   549	  0.928
+Normalized Mutual Information = 0.855
+Step: 43	[100%]No further separation. Node 44 is gate for cell population 4
+Step: 44	[100%]
+[Selected] marker pair CD16.32 and IgM
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  46	  9902	   410	  1095	  0.929
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  48	 29731	  1748	  1126	  0.954
+         9	  28	  6993	   460	   398	  0.942
+        10	  45	  7981	   688	   549	  0.928
+Normalized Mutual Information = 0.855
+Step: 45	[100%]
+[Selected] marker pair IgD and CD27
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  46	  9902	   410	  1095	  0.929
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  48	 29731	  1748	  1126	  0.954
+         9	  28	  6993	   460	   398	  0.942
+        10	  49	  7959	   628	   571	  0.930
+Normalized Mutual Information = 0.856
+Step: 46	[100%]No further separation. Node 47 is gate for cell population 2
+Step: 47	[100%]
+[Selected] marker pair CD44 and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  50	  9855	   332	  1142	  0.930
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  48	 29731	  1748	  1126	  0.954
+         9	  28	  6993	   460	   398	  0.942
+        10	  49	  7959	   628	   571	  0.930
+Normalized Mutual Information = 0.856
+Step: 48	[100%]
+[Selected] marker pair IgD and CD19
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  50	  9855	   332	  1142	  0.930
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  51	 29435	   942	  1422	  0.961
+         9	  28	  6993	   460	   398	  0.942
+        10	  49	  7959	   628	   571	  0.930
+Normalized Mutual Information = 0.858
+Step: 49	[100%]
+[Selected] marker pair IgD and CD11b
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  50	  9855	   332	  1142	  0.930
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  51	 29435	   942	  1422	  0.961
+         9	  28	  6993	   460	   398	  0.942
+        10	  52	  7927	   480	   603	  0.936
+Normalized Mutual Information = 0.858
+Step: 50	[100%]
+[Selected] marker pair CD44 and CD90
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  53	  9833	   301	  1164	  0.931
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  51	 29435	   942	  1422	  0.961
+         9	  28	  6993	   460	   398	  0.942
+        10	  52	  7927	   480	   603	  0.936
+Normalized Mutual Information = 0.858
+Step: 51	[100%]
+[Selected] marker pair CD45 and CD16.32
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  53	  9833	   301	  1164	  0.931
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  54	 29331	   833	  1526	  0.961
+         9	  28	  6993	   460	   398	  0.942
+        10	  52	  7927	   480	   603	  0.936
+Normalized Mutual Information = 0.858
+Step: 52	[100%]No further separation. Node 53 is gate for cell population 5
+Step: 53	[100%]No further separation. Node 54 is gate for cell population 8
+Step: 54	[100%]
+[Selected] marker pair CD45 and IgM
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  53	  9833	   301	  1164	  0.931
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  54	 29331	   833	  1526	  0.961
+         9	  28	  6993	   460	   398	  0.942
+        10	  55	  7895	   437	   635	  0.936
+Normalized Mutual Information = 0.858
+Step: 55	[100%]No further separation. Node 56 is gate for cell population 10
+Elapsed time is 644.260413 seconds.
+Population	Gate	    TP	    FP	    FN	F-score
+         1	  29	 15390	   534	  1172	  0.947
+         2	  47	  6683	   255	   544	  0.944
+         3	  26	 10863	 14070	  1338	  0.585
+         4	  44	 19313	    85	   822	  0.977
+         5	  53	  9833	   301	  1164	  0.931
+         6	  26	 13421	 11512	   784	  0.686
+         7	   4	 13324	    35	   442	  0.982
+         8	  54	 29331	   833	  1526	  0.961
+         9	  28	  6993	   460	   398	  0.942
+        10	  56	  7804	   218	   726	  0.943
+Normalized Mutual Information = 0.859
+</pre><img vspace="5" hspace="5" src="demo_06.png" alt=""> <img vspace="5" hspace="5" src="demo_07.png" alt=""> <img vspace="5" hspace="5" src="demo_08.png" alt=""> <h2 id="8">Reference</h2><p>Krishnaswamy, Smita, Matthew H. Spitzer, Michael Mingueneau, Sean C. Bendall, Oren Litvin, Erica Stone, Dana Pe&#8217;er, and Garry P. Nolan. "Conditional density-based analysis of T cell signaling in single-cell data." <i>Science</i> 346, no. 6213 (2014): 1250689.</p><p>Spitzer, Matthew H., Pier Federico Gherardini, Gabriela K. Fragiadakis, Nupur Bhattacharya, Robert T. Yuan, Andrew N. Hotson, Rachel Finck et al. "An interactive reference framework for modeling a dynamic immune system." <i>Science</i> 349, no. 6244 (2015): 1259425.</p><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Generating 2D Gating Hierarhcy from Clustered Cytometry Data
+% Our algorithm cluster-to-gates(C2G) can visualize a clustered cytometry
+% data in 2D gating hierarchy. The overall input to C2G are two variables:
+% "data" and "label". "data" is a N-by-M matrix where N is the number of
+% cells and M is the number of markers. "label" is a N-by-1 matrix and this
+% matrix represent which cluster each cell belongs to (0 for ungated
+% cells).  In this page, we will demonstrate how to use C2G to generate
+% gating hierarchy on a simulated data and on a CyTOF dataset that are
+% manually gated. The software and testing data can be downloaded
+% <https://github.com/xysheep/C2G/releases here> .
+
+%% Initialization and load the simulated data
+% This simulated data set contain 20000 cells, which consist of 5
+% populations.Two of the populations are addressed as known and labeled as
+% 1 and 2. The cells in other populations are labeled 0 which means
+% "ungated". A visualization of the original data is also shown in the
+% following sections.
+addpath('src')
+addpath('libs')
+load('testdata/simulated.mat','data','label');
+markernames ={'Marker 1','Marker 2','Marker 3'};
+fprintf('Size of "data" is %d-by-%d\n',size(data));
+fprintf('Size of "label" is %d-by-%d\n',size(label));
+
+%% Visualize the simulated data and pre-clustered simulated data in 3D
+% In real application, this section is not necessay.
+col = [0.8 0.8 0.8;hsv(length(unique(label))-1)];
+figure('Position',[680 478 560 420]);
+scatter3(data(:,1),data(:,2),data(:,3),1,col(label+1,:));
+xlabel('Marker 1')
+ylabel('Marker 2')
+zlabel('Marker 3')
+axis([-5 15 -5 15 -5 15]);
+
+%% Run the analysis on the simulated data
+% This section perform the analysis on the simulated data. If your data
+% have no "ungated" cells, preclustered step can be skipped. If you skip
+% precluster, the second and third parameter in function "C2G" should be
+% the same. Compute local density step is also optional, it can decrease
+% time cost in computing density when you want to try different parameter
+% setting in "C2G". If you skipped it, no need to input the fourth
+% parameter in "C2G".
+
+% Precluster the simulated data
+rng(9464);
+preclustered_label = cluster_ungated(data,label);
+
+% Call main part of the program and return a object m that store the
+% results. The option "ignore_ratio" mean percentage of low density cells
+% ignored when compute overlap between different populations
+
+m = C2G(data,preclustered_label,label,'markernames',markernames); 
+% Draw the obtained gating hierarchy
+% Show statistics
+m.view_gates(data,markernames,'n_lines',1,'onepanel',true);
+outtable = m.show_f_score(label); 
+
+%% Load a moderate-sized CyTOF dataset with ~10,1000 cells
+% This is a dataset about T cell signaling (Krishnaswamy et al, Science,
+% 2014). It can be downloaded from
+% <https://www.c2b2.columbia.edu/danapeerlab/html/dremi-data.html here>.
+% This section will read multiple fcs files. Each fcs file correspond to
+% one cell population. C2G will automatically generate cell labels based on
+% fsc files. FCS files are store in the "testdata" folder.
+% "CD4_Effmen.fcs", "CD4_naive.fcs", and "CD8_naive.fcs" are cells of
+% target populations and "ctr.fcs" contain all cells. In this example, we
+% only use surface protein markers.
+clear
+close all
+addpath('src')
+addpath('libs')
+fdname = 'testdata';
+[ori_data,ori_l,ori_markers]=load_mul_fcs(fdname,'ctr.fcs');
+
+surface_idx = [3 4 6 8 9 11 12 13 22 24 25 27];
+data = ori_data(:,surface_idx);
+markers = ori_markers(surface_idx);
+n_markers = length(markers);
+
+%% Generate gating hierarchy for manually gated populations
+
+% Precluster the ungated cells
+rng(9464)
+label = cluster_ungated(data,ori_l);
+% Perform the anlysis
+m_ori = C2G(data,label,ori_l,'markernames',markers);
+% Visualize the results
+m_ori.view_gates(data,markers,'n_lines',3,'ignore_small',0,'onepanel',true);
+m_ori.show_f_score(ori_l);
+
+%% Generate gating hierarchy for K-means defined populations (K=10)
+rng(9464)
+km_l = kmeans(data,10);
+new_km_l = km_l; % Since all populiations is known, no need to pre-cluster
+% Perform the anlysis
+m_km = C2G(data,km_l,km_l,'markernames',markers);
+% Visualize the results
+m_km.view_gates(data,markers,'n_lines',4,'ignore_small',200);
+m_km.show_f_score(km_l);
+
+%% Apply C2G to large CyTOF dataset with ~140,000 cells
+% This is a larger CyTOF dataset with 140k cells and 21 protein markers
+% (Spitzer, Matthew H., et al, Science, 2015 ). This data can be download
+% from <https://community.cytobank.org/cytobank/experiments/60068 here>
+% This dataset is clustered by k-means where k equal to 10. This part will
+% take around 10 minutes on a desktop.
+[ori_data, marker] = readfcs_v2('testdata/bigdata/TIN_BLD1_Untreated_Day3.fcs');
+% Transform the CyTOF
+data = flow_arcsinh(ori_data,5);
+% Select protein markers
+marker_idx = [10,16,17,18,19,21,22,24,29,31,32,33,39,40,41,46,47,49,50,51,52];
+d = data(marker_idx,:)';
+rng(9464);
+label = kmeans(d,10);
+% Perform the anlysis
+tic;m = C2G(d, label, label,'markernames',marker(marker_idx));toc;
+% Visualize the results
+w = warning ('off','all');
+m.view_gates(d,marker(marker_idx),'ignore_small',3000,'n_lines',4);
+warning(w);
+m.show_f_score(label);
+
+%% Reference
+% Krishnaswamy, Smita, Matthew H. Spitzer, Michael Mingueneau, Sean C. Bendall, Oren Litvin, Erica Stone, Dana Pe’er, and Garry P. Nolan. "Conditional density-based analysis of T cell signaling in single-cell data." _Science_ 346, no. 6213 (2014): 1250689.
+%
+% Spitzer, Matthew H., Pier Federico Gherardini, Gabriela K. Fragiadakis, Nupur Bhattacharya, Robert T. Yuan, Andrew N. Hotson, Rachel Finck et al. "An interactive reference framework for modeling a dynamic immune system." _Science_ 349, no. 6244 (2015): 1259425.
+##### SOURCE END #####
+--></body></html>

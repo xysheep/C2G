@@ -47,7 +47,10 @@ C2G has the following hyperparameter that you can tune according to the shape of
 **'outlier_level'** Percentage of low density cells of target populations ignored when decide whether a unlabeled cells overlaped with target populations. Default is 0.05. 
 ### function C2G
 **'showdetail'** Whether to show the f-score of each cell populations after each iteration. Default is true. 
+
 **'trivial_gate'** Smallest number of cells a single gate must exclude when it's the only gate in that marker pair. Default is 50.
+
+**'grid_size'** Number of grids along each marker. Default is 40.
 ### function gatingTree.view_gates
 **'fontsize'** Default is 20. 
 

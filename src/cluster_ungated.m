@@ -3,7 +3,14 @@ function new_labels = cluster_ungated(data,l,pre_cluster_perc,outliers_level)
 % This function is used to cluster ungated cells based their overlap with
 % kown target populations. The returned cells labeled 0 in original labels
 % are changed into some cluster labels larger than original labels. 
- 
+%       new_l = cluster_ungated(data,l,...) "d" is the M-by-N data matrix where M is the
+%       number of markers. "l" are M-by-1 matrix represent cell labels before pre-cluster. 
+% Optional parameter:
+%       'pre_cluster_perc' Minimum percentage of unlabeled cells that
+%       should be pre-clustered. Default is 0.95. 
+%       'outlier_level'Percentage of low density cells of target
+%       populations ignored when decide whether a unlabeled cells overlaped
+%       with target populations. Default is 0.05.
 
 %% Address input parameters
 if ~exist('pre_cluster_perc','var')

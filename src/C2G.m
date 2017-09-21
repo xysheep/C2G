@@ -7,6 +7,9 @@ function T = C2G(d,l,ori_l,varargin)%ig_ratio,markernames,col)
 % Optional parameter:
 %       'showdetail': true/false. Whether to show the f-score after each 
 %       iteration. Default is true. 
+%       'trivial_gate' Smallest number of cells a single gate must exclude
+%       when it's the only gate in that marker pair. Default is 50.
+%       'grid_size' Number of grids along each marker. Default is 40.
 
 n_markers = size(d,2);
 % Compute local density

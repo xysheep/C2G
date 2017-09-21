@@ -41,9 +41,9 @@ In general, you need to have MATLAB installed and directory of "libs" and "src" 
 ## Parameters
 C2G has the following hyperparameter that you can tune according to the shape of your data. 
 ### function cluster_ungated
-**pre_cluster_perc** Minimum percentage of unlabeled cells that should be pre-clustered. Default is 0.95. 
+**'pre_cluster_perc'** Minimum percentage of unlabeled cells that should be pre-clustered. Default is 0.95. 
 
-**outlier_level** Percentage of low density cells of target populations ignored when decide whether a unlabeled cells overlaped with target populations. Default is 0.05. 
+**'outlier_level'** Percentage of low density cells of target populations ignored when decide whether a unlabeled cells overlaped with target populations. Default is 0.05. 
 ### function C2G
 **'showdetail'** Whether to show the f-score of each cell populations after each iteration. Default is true. 
 ### function gatingTree.view_gates

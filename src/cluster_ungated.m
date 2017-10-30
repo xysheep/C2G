@@ -1,4 +1,4 @@
-function new_labels = cluster_ungated(data,l,pre_cluster_perc,outliers_level)
+function new_labels = cluster_ungated(data,l,pre_cluster_perc,outliers_level,visualize)
 %% Function description
 % This function is used to cluster ungated cells based their overlap with
 % kown target populations. The returned cells labeled 0 in original labels
@@ -23,7 +23,9 @@ if sum(l==0)==0
     new_labels = l;
     return
 end
-
+if ~exist('visualize', 'var')
+    visualize = 0;
+end
 %% Compute overlap for target population on each dimension
 % One cell is defined to be overlapped with one target population on
 % certain dimension if its intensity on that dimension is between maximum
@@ -33,8 +35,10 @@ unique_l(unique_l==0) = [];
 n_cluster = length(unique_l);
 in_range = zeros(size(data,1),n_cluster*size(data,2));
 outliers_level = 1 - outliers_level;
-% figure;
-% k=1;
+if visualize == 1
+    figure;
+end
+k=1;
 for i = 1:length(unique_l)
     for d = 1:size(data,2)
         
@@ -48,20 +52,21 @@ for i = 1:length(unique_l)
         in_range(data(:,d)>right,(i-1)*size(data,2)+d) = 1;
         in_range(data(:,d)<left,(i-1)*size(data,2)+d) = -1;
         
-        
-%         subplot(size(data,2),length(unique_l),(d-1)*length(unique_l)+i);
-%         ksdensity(data(l==unique_l(i),d));
-%         hold on
-%         ksdensity(data(l==0,d));
-%         plot([left left],[0 0.6],'r-')
-%         plot([right right],[0 0.6],'r-')
-%         text((left-5)/2, 0.5,'-1');
-%         text((right+15)/2, 0.5,'+1');
-%         text((left+right)/2, 0.5,'0');
-%         %legend('Target','Unknown')
-%         title(sprintf('Target %d in Marker %d',unique_l(i),d));
-%         axis([-5 15 0 0.6]);
-%         k = k + 1;
+        if visualize == 1
+            subplot(size(data,2),length(unique_l),(d-1)*length(unique_l)+i);
+            ksdensity(data(l==unique_l(i),d));
+            hold on
+            ksdensity(data(l==0,d));
+            plot([left left],[0 0.6],'r-')
+            plot([right right],[0 0.6],'r-')
+            text((left-5)/2, 0.5,'-1');
+            text((right+15)/2, 0.5,'+1');
+            text((left+right)/2, 0.5,'0');
+            %legend('Target','Unknown')
+            title(sprintf('Target %d in Marker %d',unique_l(i),d));
+            axis([-5 15 0 0.6]);
+        end
+        k = k + 1;
     end
 end
 

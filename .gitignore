@@ -57,3 +57,6 @@ manuscript/
 html/
 # Figures
 .pdf
+test.m
+.Rhistory
+test_flowtype.R

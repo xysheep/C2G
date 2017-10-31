@@ -20,11 +20,11 @@ n_markers = size(d,2);
 
 % Initiate other parameters
 % ignore_ratio, markernames, and color is not used in new version. 
-pnames = { 'trivial_gate','markernames','color','showdetail', 'grid_size'};
-dflts  = { 50          ,cell(size(d,2),1)           ,[], true, 40};
-[trivial_gate,markernames,col, showdetail, grid_size] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+pnames = { 'ratio_trivial_gate', 'trivial_gate','markernames','color','showdetail', 'grid_size'};
+dflts  = { 0.3, 50          ,cell(size(d,2),1)           ,[], true, 40};
+[ratio_trivial_gate, trivial_gate,markernames,col, showdetail, grid_size] = internal.stats.parseArgs(pnames,dflts,varargin{:});
 
-
+lsize = histc(ori_l, unique(ori_l));
 queue = CQueue();
 queue.push(1);
 T = gatingTree(unique(l),length(l),4);
@@ -86,7 +86,12 @@ while ~queue.isempty()
                     gated_pop = length(sub_l(gatelabels{1}));
                     exclude_cells = current_pop - gated_pop;
                 end
-                if (n_gates>1 || (flag_seperate && exclude_cells>trivial_gate) ) && (entropy < best_entropy ||...
+                maxresidual = max(lsize(ismember(unique(ori_l), unique(sub_ori_l)))) * ratio_trivial_gate;
+                if ismember(0, ori_l) && maxresidual == lsize(1)
+                    maxresidual = trivial_gate;
+                end
+                n_trivial_gate = min(trivial_gate, maxresidual);
+                if (n_gates>1 || (flag_seperate && exclude_cells>n_trivial_gate) ) && (entropy < best_entropy ||...
                         (entropy==best_entropy && n_gates > best_n_gates))
                     best_entropy = entropy;
                     best_n_gates = n_gates;

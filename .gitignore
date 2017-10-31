@@ -58,3 +58,8 @@ html/
 # Figures
 .pdf
 test.m
+<<<<<<< HEAD
+=======
+.Rhistory
+test_flowtype.R
+>>>>>>> d44c45a7d95b31230eb8ab5d237a39f130f70f85

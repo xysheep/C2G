@@ -17,12 +17,11 @@ n_markers = size(d,2);
 %     fprintf('Local density not provided, computing...\n');tic;
 %     density = compute_density(d,l);toc;
 % end
-
 % Initiate other parameters
 % ignore_ratio, markernames, and color is not used in new version. 
-pnames = { 'ratio_trivial_gate', 'trivial_gate','markernames','color','showdetail', 'grid_size'};
-dflts  = { 0.3, 50          ,cell(size(d,2),1)           ,[], true, 40};
-[ratio_trivial_gate, trivial_gate,markernames,col, showdetail, grid_size] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+pnames = { 'ratio_trivial_gate', 'trivial_gate','markernames','color','showdetail', 'grid_size','randpair','maxdepth'};
+dflts  = { 0.3, 50          ,cell(size(d,2),1)           ,[], true, 40, false, inf};
+[ratio_trivial_gate, trivial_gate,markernames,col, showdetail, grid_size, randpair, maxdepth] = internal.stats.parseArgs(pnames,dflts,varargin{:});
 
 lsize = histc(ori_l, unique(ori_l));
 queue = CQueue();
@@ -32,6 +31,9 @@ step = 2;
 % T is the object representing the tree of gating hierachy
 while ~queue.isempty()
     node_id = queue.pop();
+    if T.depth{node_id} >= maxdepth
+        continue
+    end
     cells_idx = T.cell_idx{node_id};
     %if length(unique(ori_l(ismember(1:length(l),cells_idx)' & l~=0)))>1% || gate_fdr(cells_idx,l)
     %if length(T.main_member{node_id})>1
@@ -59,27 +61,14 @@ while ~queue.isempty()
             set(f,'Position',[100 100 1400 900])
         end
         
-        tmp_k = 0;
-        if showdetail 
-            fprintf('Step:%3d\t[', 2-step);
-        end
-        for i = 1:n_markers - 1
-            for j = i+1:n_markers
-                %tic
-                %fprintf('i=%2d\tj=%2d\t',i,j);
-                
-                [gatelabels,main_members,boundary,flag_seperate,over_matrix] = ...
-                    new_bestgate_grid(sub_d(:,i),sub_d(:,j),...
-                    sub_l,unique(sub_ori_l),T.cell_label{node_id}, grid_size);
-                
-                entropy = new_entropy_gate(sub_ori_l,gatelabels);
-                
-                if showdetail                    
-                    if tmp_k > 0 
-                        fprintf('\b\b\b\b\b');
-                    end
-                    fprintf('%3d%%]',round(200*(tmp_k+1)/(n_markers*(n_markers-1))));
-                end
+        if randpair
+            tmp_k = 0;
+            while tmp_k < 30
+                i = randi([1 n_markers - 1]);
+                j = randi([i+1 n_markers]);
+                [gatelabels,main_members,boundary,flag_seperate,~] = ...
+                        new_bestgate_grid(sub_d(:,i),sub_d(:,j),...
+                        sub_l,unique(sub_ori_l),T.cell_label{node_id}, grid_size);
                 n_gates = length(gatelabels);exclude_cells=0;
                 if n_gates ==1
                     current_pop = length(sub_l);
@@ -87,94 +76,136 @@ while ~queue.isempty()
                     exclude_cells = current_pop - gated_pop;
                 end
                 maxresidual = max(lsize(ismember(unique(ori_l), unique(sub_ori_l)))) * ratio_trivial_gate;
-                if ismember(0, ori_l) && maxresidual == lsize(1)
-                    maxresidual = trivial_gate;
-                end
                 n_trivial_gate = min(trivial_gate, maxresidual);
-                if (n_gates>1 || (flag_seperate && exclude_cells>n_trivial_gate) ) && (entropy < best_entropy ||...
-                        (entropy==best_entropy && n_gates > best_n_gates))
-                    best_entropy = entropy;
-                    best_n_gates = n_gates;
-                    %best_exclude_gates = exclude_gates;
+
+                if n_gates>1 || flag_seperate && exclude_cells>n_trivial_gate
                     best_pair = [i j];
                     best_gatelabels = gatelabels;
                     best_mainmem = main_members;
                     best_boundary = boundary;
-
-                end
-                
-                if step >= 1 && ~isempty(markernames)&& ~isempty(col)%isa(boundary,'cell') %&& length(boundary) > 1
-                    plots_row = n_markers*(n_markers-1)/2;
-                    plots_col = 4;
-                    h = subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*1);
-                    if step == 2
-                        p = get(h,'Position');
-                        p(1) = p(1) + 0.05;
-                        %p(3) = p(3) + 0.05;
-                        set(h,'Position',p);
-                    end
-                    
-                    
-                    
-                    visulizeGroups(sub_d(:,i),sub_d(:,j),sub_l,col(unique(sub_l)+1,:));
-                    legend(strread(num2str(unique(sub_l)'),'%s'),'Location','best');
-                    xlabel(markernames(i),'FontSize', 20);
-                    ylabel(markernames(j),'FontSize', 20);
-                    set(gca,'xtick',[])
-                    set(gca,'ytick',[])
-                    set(gca,'fontsize',15)
-                    if tmp_k == 0
-                        title(sprintf('Scatter Plot of\n Cell Populations'),'FontSize', 16)
-                    end
-                    subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*2);
-                    imagesc(over_matrix,[0 max(over_matrix(:))]);
-                    set(gca,'XTick',1:length(unique(sub_l)));
-                    set(gca,'XTickLabel',unique(sub_l(sub_l~=0))');
-                    set(gca,'YTick',1:length(unique(sub_l)));
-                    set(gca,'YTickLabel',unique(sub_l(sub_l~=0))');
-                    set(gca,'fontsize',20);%'1:length(unique(sub_l)));
-                    if tmp_k == 0
-                        title(sprintf('Compute Overlap\n between Populations'),'FontSize', 16)
-                    end
-                    subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*3);
-                    m = mcl(over_matrix);
-                    m = round(m,3);
-                    clustm = zeros(size(m,1),1)';
-                    for mi = 1:size(m,1)
-                        [~,clustm(mi)] = max(m(:,mi));
-                    end
-                    displayclasify(clustm,unique(sub_l(sub_l~=0)),col);
-                    if tmp_k == 0
-                        title(sprintf('MCL Clustering\n of Populations'),'FontSize', 16)
-                    end
-                    h = subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*4);
-                    if step == 1
-                        p = get(h,'Position');
-                        p(1) = p(1) + 0.025;
-                        %p(3) = p(3) + 0.05;
-                        set(h,'Position',p);
-                    end
-                    tmp_l = sub_l;
-                    visulizeGroups(sub_d(:,i),sub_d(:,j),tmp_l,col(unique(sub_l)+1,:));
-                    for i_bon = 1:length(boundary)
-                        plot(boundary{i_bon}(:,1),boundary{i_bon}(:,2),'b-o');
-                    end
-                    xlabel(markernames(i),'FontSize', 20);
-                    ylabel(markernames(j),'FontSize', 20);
-                    set(gca,'xtick',[])
-                    set(gca,'ytick',[])
-                    if (n_gates>1 || (flag_seperate && exclude_cells>50) )
-                        str_entropy = sprintf('Entropy = %.3f',entropy);
-                    else
-                        str_entropy = 'No separation';
-                    end
-                    if tmp_k == 0
-                        title(sprintf('Find Best Marker Pair\n%s',str_entropy),'FontSize', 16);
-                    else
-                        title(str_entropy,'FontSize', 16);
-                    end
+                    break
                 end
                 tmp_k = tmp_k + 1;
+            end
+        else
+
+            tmp_k = 0;
+
+            if showdetail 
+                fprintf('Step:%3d\t[', 2-step);
+            end
+            for i = 1:n_markers - 1
+                for j = i+1:n_markers
+                    %tic
+                    %fprintf('i=%2d\tj=%2d\t',i,j);
+
+                    [gatelabels,main_members,boundary,flag_seperate,over_matrix] = ...
+                        new_bestgate_grid(sub_d(:,i),sub_d(:,j),...
+                        sub_l,unique(sub_ori_l),T.cell_label{node_id}, grid_size);
+
+                    entropy = new_entropy_gate(sub_ori_l,gatelabels);
+
+                    if showdetail                    
+                        if tmp_k > 0 
+                            fprintf('\b\b\b\b\b');
+                        end
+                        fprintf('%3d%%]',round(200*(tmp_k+1)/(n_markers*(n_markers-1))));
+                    end
+                    n_gates = length(gatelabels);exclude_cells=0;
+                    if n_gates ==1
+                        current_pop = length(sub_l);
+                        gated_pop = length(sub_l(gatelabels{1}));
+                        exclude_cells = current_pop - gated_pop;
+                    end
+                    maxresidual = max(lsize(ismember(unique(ori_l), unique(sub_ori_l)))) * ratio_trivial_gate;
+                    if ismember(0, ori_l) && maxresidual == lsize(1)
+                        maxresidual = trivial_gate;
+                    end
+                    n_trivial_gate = min(trivial_gate, maxresidual);
+                    if (n_gates>1 || (flag_seperate && exclude_cells>n_trivial_gate) ) && (entropy < best_entropy ||...
+                            (entropy==best_entropy && n_gates > best_n_gates))
+                        best_entropy = entropy;
+                        best_n_gates = n_gates;
+                        %best_exclude_gates = exclude_gates;
+                        best_pair = [i j];
+                        best_gatelabels = gatelabels;
+                        best_mainmem = main_members;
+                        best_boundary = boundary;
+                    end
+
+                    if step >= 1 && ~isempty(markernames)&& ~isempty(col)%isa(boundary,'cell') %&& length(boundary) > 1
+                        plots_row = n_markers*(n_markers-1)/2;
+                        plots_col = 4;
+                        h = subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*1);
+                        if step == 2
+                            p = get(h,'Position');
+                            p(1) = p(1) + 0.05;
+                            %p(3) = p(3) + 0.05;
+                            set(h,'Position',p);
+                        end
+
+
+
+                        visulizeGroups(sub_d(:,i),sub_d(:,j),sub_l,col(unique(sub_l)+1,:));
+                        legend(strread(num2str(unique(sub_l)'),'%s'),'Location','best');
+                        xlabel(markernames(i),'FontSize', 20);
+                        ylabel(markernames(j),'FontSize', 20);
+                        set(gca,'xtick',[])
+                        set(gca,'ytick',[])
+                        set(gca,'fontsize',15)
+                        if tmp_k == 0
+                            title(sprintf('Scatter Plot of\n Cell Populations'),'FontSize', 16)
+                        end
+                        subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*2);
+                        imagesc(over_matrix,[0 max(over_matrix(:))]);
+                        set(gca,'XTick',1:length(unique(sub_l)));
+                        set(gca,'XTickLabel',unique(sub_l(sub_l~=0))');
+                        set(gca,'YTick',1:length(unique(sub_l)));
+                        set(gca,'YTickLabel',unique(sub_l(sub_l~=0))');
+                        set(gca,'fontsize',20);%'1:length(unique(sub_l)));
+                        if tmp_k == 0
+                            title(sprintf('Compute Overlap\n between Populations'),'FontSize', 16)
+                        end
+                        subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*3);
+                        m = mcl(over_matrix);
+                        m = round(m,3);
+                        clustm = zeros(size(m,1),1)';
+                        for mi = 1:size(m,1)
+                            [~,clustm(mi)] = max(m(:,mi));
+                        end
+                        displayclasify(clustm,unique(sub_l(sub_l~=0)),col);
+                        if tmp_k == 0
+                            title(sprintf('MCL Clustering\n of Populations'),'FontSize', 16)
+                        end
+                        h = subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*4);
+                        if step == 1
+                            p = get(h,'Position');
+                            p(1) = p(1) + 0.025;
+                            %p(3) = p(3) + 0.05;
+                            set(h,'Position',p);
+                        end
+                        tmp_l = sub_l;
+                        visulizeGroups(sub_d(:,i),sub_d(:,j),tmp_l,col(unique(sub_l)+1,:));
+                        for i_bon = 1:length(boundary)
+                            plot(boundary{i_bon}(:,1),boundary{i_bon}(:,2),'b-o');
+                        end
+                        xlabel(markernames(i),'FontSize', 20);
+                        ylabel(markernames(j),'FontSize', 20);
+                        set(gca,'xtick',[])
+                        set(gca,'ytick',[])
+                        if (n_gates>1 || (flag_seperate && exclude_cells>50) )
+                            str_entropy = sprintf('Entropy = %.3f',entropy);
+                        else
+                            str_entropy = 'No separation';
+                        end
+                        if tmp_k == 0
+                            title(sprintf('Find Best Marker Pair\n%s',str_entropy),'FontSize', 16);
+                        else
+                            title(str_entropy,'FontSize', 16);
+                        end
+                    end
+                    tmp_k = tmp_k + 1;
+                end
             end
         end
         step = step - 1;

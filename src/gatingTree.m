@@ -8,6 +8,7 @@ classdef gatingTree < handle
         numNode = 1;
         parents    % node_id of last gate. 0 means all data
         buffersize = 10;% avoid change the buffer size in each loop
+        depth = {[]}
     end
 %% Use the Following scripts to test the object
 % 
@@ -31,9 +32,10 @@ classdef gatingTree < handle
                 obj.cell_idx = {1:numcell};
             end
             obj.cell_label{1} = all_label(all_label~=0);
+            obj.depth{1} = 0;
             obj.parents = zeros(1,obj.buffersize);
         end
-        function obj = addnode(obj,parent, cell_labels)
+        function obj = addnode(obj, parent, cell_labels)
             if obj.numNode == obj.buffersize
             % If Number of nodes close to the buffersize, double the
             % buffersize
@@ -41,6 +43,7 @@ classdef gatingTree < handle
                 obj.parents = [obj.parents zeros(1,obj.numNode)];
             end
             obj.parents(obj.numNode+1) = parent;
+            obj.depth{obj.numNode+1} = obj.depth{parent} + 1;
             obj.cell_label{obj.numNode+1} = cell_labels;
             obj.numNode = obj.numNode +1;
         end
@@ -52,6 +55,7 @@ classdef gatingTree < handle
                 obj.parents = [obj.parents zeros(1,obj.numNode)];
             end
             obj.parents(obj.numNode+1) = parent;
+            obj.depth{obj.numNode+1} = obj.depth{parent} + 1;
             obj.cell_idx{obj.numNode+1} = cell_idx;
             obj.cell_label{obj.numNode+1} = cell_labels;
             obj.boundary{obj.numNode+1} = boundary;

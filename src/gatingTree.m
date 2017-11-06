@@ -186,7 +186,7 @@ classdef gatingTree < handle
         function [outtable,nmi] = show_f_score(obj,label)
             idx = 1:obj.numNode;
             leaf_idx = idx(~ismember(idx,unique(obj.parents)) & cellfun(@length,obj.cell_idx)>0);
-            outtable = zeros(length(unique(label))-1,6);
+            outtable = zeros(length(unique(label))-1,7);
             k = 0;
             for i = 1:length(leaf_idx)
                 tar_pop = obj.cell_label{leaf_idx(i)};
@@ -201,12 +201,14 @@ classdef gatingTree < handle
                 end
             end
             outtable(:,6) = 2*outtable(:,3)./(2*outtable(:,3)+outtable(:,4)+outtable(:,5));
+            outtable(:,7) = 100*(outtable(:,3) + outtable(:,5))./(length(label));
             [~,pop_order] = sort(outtable(:,1));
             outtable = outtable(pop_order,:);
-            fprintf('Population\tGate\t    TP\t    FP\t    FN\tF-score\n');
-            fprintf('%10d\t%4d\t%6d\t%6d\t%6d\t  %.3f\n',outtable');
+            fprintf('Population\tGate\t    TP\t    FP\t    FN\tF-score\tPercentage\n');
+            fprintf('%10d\t%4d\t%6d\t%6d\t%6d\t  %.3f\t%2.1f\n',outtable');
             nmi = nmi_gate(label,obj.cell_idx(leaf_idx));
             fprintf('Normalized Mutual Information = %.3f\n',nmi);
+            fprintf('Average F-score = %.3f\n',mean(outtable(:,6)));
         end
         function can_merge(obj)
             idx = 1:obj.numNode;

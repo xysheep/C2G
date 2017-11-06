@@ -39,7 +39,8 @@ if exist('ctrf','var')
     idx = 1:flen;
     idx(idx==flag)=[];
     for i = idx
-        rmidx = knnsearch(cell_data{flag},cell_data{i});
+        [~,minidx] = min(pdist2(cell_data{flag},cell_data{i}));
+        rmidx = minidx';
         cell_data{flag}(rmidx,:)= [];
         cell_label{flag} = zeros(size(cell_data{flag},1),1);
     end

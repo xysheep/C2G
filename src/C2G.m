@@ -1,4 +1,4 @@
-function T = C2G(d,l,ori_l,varargin)%ig_ratio,markernames,col)
+function [T,Fdemo] = C2G(d,l,ori_l,varargin)%ig_ratio,markernames,col)
 % C2G perform the analysis return a gatingTree object that store the
 % obtained gating hierarchy.
 %       T = C2G(d,l,ori_l,...) "d" is the M-by-N data matrix where M is the
@@ -19,15 +19,39 @@ n_markers = size(d,2);
 % end
 % Initiate other parameters
 % ignore_ratio, markernames, and color is not used in new version. 
-pnames = { 'ratio_trivial_gate', 'trivial_gate','markernames','color','showdetail', 'grid_size','randpair','maxdepth'};
-dflts  = { 0.3, 50          ,cell(size(d,2),1)           ,[], true, 40, false, inf};
-[ratio_trivial_gate, trivial_gate,markernames,col, showdetail, grid_size, randpair, maxdepth] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+% pnames = { 'ratio_trivial_gate', 'trivial_gate','markernames','color','showdetail', 'grid_size','randpair','maxdepth'};
+% dflts  = { 0.3, 50          ,cell(size(d,2),1)           ,[], true, 40, false, inf};
+% [ratio_trivial_gate, trivial_gate,markernames,col, showdetail, grid_size, randpair, maxdepth] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+p = inputParser;
+addParameter(p,'ratio_trivial_gate',0.3,@isnumeric);
+addParameter(p,'trivial_gate',50,@isnumeric);
+addParameter(p,'markernames',cell(size(d,2),1),@iscell);
+addParameter(p,'color',[],@isnumeric);
+addParameter(p,'showdetail',0.3,@islogical);
+addParameter(p,'grid_size',40,@isnumeric);
+addParameter(p,'randpair',false,@islogical);
+addParameter(p,'maxdepth',inf,@isnumeric);
+parse(p,varargin{:});
+ratio_trivial_gate = p.Results.ratio_trivial_gate;
+trivial_gate = p.Results.trivial_gate;
+markernames = p.Results.markernames;
+col = p.Results.color;
+showdetail = p.Results.showdetail;
+grid_size = p.Results.grid_size;
+randpair = p.Results.randpair;
+maxdepth = p.Results.maxdepth;
 
+
+if ~isempty(markernames) && ~isempty(col)
+    Fdemo = cell(0);
+end
+%% Main part of C2G
 lsize = histc(ori_l, unique(ori_l));
 queue = CQueue();
 queue.push(1);
 T = gatingTree(unique(l),length(l),4);
 step = 2;
+drawst = 1;
 % T is the object representing the tree of gating hierachy
 while ~queue.isempty()
     node_id = queue.pop();
@@ -57,8 +81,9 @@ while ~queue.isempty()
         % from other population. To draw next gate based this, no need to
         % draw a separate gate for other populations. 
         if step>=1 && ~isempty(markernames) && ~isempty(col)
-            f = figure;
-            set(f,'Position',[100 100 1400 900])
+            Fdemo{drawst} = figure('Position',[100 100 900 500],'Units','inches',...
+                'PaperOrientation','landscape','PaperSize',[9 5.2083],'PaperUnits','inches');
+            drawst =  drawst + 1;
         end
         
         if randpair
@@ -132,77 +157,8 @@ while ~queue.isempty()
                         best_mainmem = main_members;
                         best_boundary = boundary;
                     end
-
-                    if step >= 1 && ~isempty(markernames)&& ~isempty(col)%isa(boundary,'cell') %&& length(boundary) > 1
-                        plots_row = n_markers*(n_markers-1)/2;
-                        plots_col = 4;
-                        h = subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*1);
-                        if step == 2
-                            p = get(h,'Position');
-                            p(1) = p(1) + 0.05;
-                            %p(3) = p(3) + 0.05;
-                            set(h,'Position',p);
-                        end
-
-
-
-                        visulizeGroups(sub_d(:,i),sub_d(:,j),sub_l,col(unique(sub_l)+1,:));
-                        legend(strread(num2str(unique(sub_l)'),'%s'),'Location','best');
-                        xlabel(markernames(i),'FontSize', 20);
-                        ylabel(markernames(j),'FontSize', 20);
-                        set(gca,'xtick',[])
-                        set(gca,'ytick',[])
-                        set(gca,'fontsize',15)
-                        if tmp_k == 0
-                            title(sprintf('Scatter Plot of\n Cell Populations'),'FontSize', 16)
-                        end
-                        subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*2);
-                        imagesc(over_matrix,[0 max(over_matrix(:))]);
-                        set(gca,'XTick',1:length(unique(sub_l)));
-                        set(gca,'XTickLabel',unique(sub_l(sub_l~=0))');
-                        set(gca,'YTick',1:length(unique(sub_l)));
-                        set(gca,'YTickLabel',unique(sub_l(sub_l~=0))');
-                        set(gca,'fontsize',20);%'1:length(unique(sub_l)));
-                        if tmp_k == 0
-                            title(sprintf('Compute Overlap\n between Populations'),'FontSize', 16)
-                        end
-                        subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*3);
-                        m = mcl(over_matrix);
-                        m = round(m,3);
-                        clustm = zeros(size(m,1),1)';
-                        for mi = 1:size(m,1)
-                            [~,clustm(mi)] = max(m(:,mi));
-                        end
-                        displayclasify(clustm,unique(sub_l(sub_l~=0)),col);
-                        if tmp_k == 0
-                            title(sprintf('MCL Clustering\n of Populations'),'FontSize', 16)
-                        end
-                        h = subplot(plots_row,plots_col,tmp_k*4+5*(step-1)-2*(step-1.5)*4);
-                        if step == 1
-                            p = get(h,'Position');
-                            p(1) = p(1) + 0.025;
-                            %p(3) = p(3) + 0.05;
-                            set(h,'Position',p);
-                        end
-                        tmp_l = sub_l;
-                        visulizeGroups(sub_d(:,i),sub_d(:,j),tmp_l,col(unique(sub_l)+1,:));
-                        for i_bon = 1:length(boundary)
-                            plot(boundary{i_bon}(:,1),boundary{i_bon}(:,2),'b-o');
-                        end
-                        xlabel(markernames(i),'FontSize', 20);
-                        ylabel(markernames(j),'FontSize', 20);
-                        set(gca,'xtick',[])
-                        set(gca,'ytick',[])
-                        if (n_gates>1 || (flag_seperate && exclude_cells>50) )
-                            str_entropy = sprintf('Entropy = %.3f',entropy);
-                        else
-                            str_entropy = 'No separation';
-                        end
-                        if tmp_k == 0
-                            title(sprintf('Find Best Marker Pair\n%s',str_entropy),'FontSize', 16);
-                        else
-                            title(str_entropy,'FontSize', 16);
-                        end
+                    if step >= 1 && ~isempty(markernames)&& ~isempty(col)
+                        drawdemo(i,j,col,sub_d,sub_l,over_matrix,boundary,n_markers,tmp_k,step,markernames,n_gates,entropy,flag_seperate,exclude_cells);
                     end
                     tmp_k = tmp_k + 1;
                 end

@@ -39,9 +39,9 @@ if length(idx)==6
         idx_idx = find(idx == uniq_idx(i));
         for j = 1:length(idx_idx)
             plot(location(1,k),location(2,k),'.',...
-                'markersize', 70,'Color', col(label(idx_idx(j))+1,:));
+                'markersize', 50,'Color', col(label(idx_idx(j))+1,:));
             text(location(1,k),location(2,k),num2str(label(idx_idx(j))),...
-                'HorizontalAlignment','center','FontSize',20);
+                'HorizontalAlignment','center','FontSize',15);
             k = k + 1;
         end
         if length(idx_idx) == 2
@@ -74,9 +74,9 @@ elseif length(idx) == 3
         idx_idx = find(idx == uniq_idx(i));
         for j = 1:length(idx_idx)
             plot(location(1,k),location(2,k),'.',...
-                'markersize', 70,'Color', col(label(idx_idx(j))+1,:));
+                'markersize', 50,'Color', col(label(idx_idx(j))+1,:));
             text(location(1,k),location(2,k),num2str(label(idx_idx(j))),...
-                'HorizontalAlignment','center','FontSize',20);
+                'HorizontalAlignment','center','FontSize',15);
             k = k + 1;
         end
         if length(idx_idx) == 2

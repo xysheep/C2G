@@ -1,4 +1,4 @@
-function new_labels = cluster_ungated(data,l,pre_cluster_perc,outliers_level,visualize)
+function [new_labels,f] = cluster_ungated(data,l,pre_cluster_perc,outliers_level,visualize)
 %% Function description
 % This function is used to cluster ungated cells based their overlap with
 % kown target populations. The returned cells labeled 0 in original labels
@@ -36,7 +36,7 @@ n_cluster = length(unique_l);
 in_range = zeros(size(data,1),n_cluster*size(data,2));
 outliers_level = 1 - outliers_level;
 if visualize == 1
-    figure;
+    f=figure('Position',[680 678 350 300]);
 end
 k=1;
 for i = 1:length(unique_l)
@@ -63,7 +63,7 @@ for i = 1:length(unique_l)
             text((right+15)/2, 0.5,'+1');
             text((left+right)/2, 0.5,'0');
             %legend('Target','Unknown')
-            title(sprintf('Target %d in Marker %d',unique_l(i),d));
+            title(sprintf('Target %d in Marker %d',unique_l(i),d),'FontSize', 12);
             axis([-5 15 0 0.6]);
         end
         k = k + 1;

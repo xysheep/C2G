@@ -36,6 +36,8 @@ elseif ~colinear(xg,yg)
     k = convhull(xg,yg);
     %d = DouglasPeucker([xg(k),yg(k)], 'AUTO', 0);
     [boundaryx,boundaryy] = poly2cw(xg(k),yg(k));
+%     boundaryx = xg(k);
+%     boundaryy = yg(k);
 else
     [~,beg_idx] = min(xg);
     [~,end_idx] = max(xg);

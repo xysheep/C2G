@@ -39,7 +39,7 @@ m = mcl(adj);
 % figure;imagesc(adj);
 % figure;imagesc(m);
 %sum(sum(m,2)>=1)
-m = round(m,3);
+m = round(m.*1000)./1000;
 % m = cluster(-log(adj+max(0.0001,min(adj(:)))*0.01));
 % gates = zeros(size(label));
 % for i = 1:length(all_labels)

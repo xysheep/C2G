@@ -64,3 +64,6 @@ test_flowtype.R
 *.RData
 .Rhistory
 *.R
+*.jpg
+*.pdf
+*.svg

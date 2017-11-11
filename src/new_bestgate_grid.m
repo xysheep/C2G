@@ -21,8 +21,9 @@ code = nx*100 + ny;
 numc = zeros(size(grid,1),1+length(all_labels));
 counter  =  1;
 for t = [0,all_labels']
-    if sum(label == t) > 0
-        numc(:,counter) = histc(ic(label == t), 1:length(grid));
+    lt = label == t;
+    if sum(lt) > 0
+        numc(:,counter) = histc(ic(lt), 1:length(grid));
     end
     counter = counter + 1;
 end

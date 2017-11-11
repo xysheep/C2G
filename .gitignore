@@ -70,3 +70,8 @@ test_flowtype.R
 *.svg
 *.mat
 *.prj
+Complied/main.exe
+Complied/label.csv
+Complied/ctr.fcs
+Complied/ctr.fcs
+Complied.zip

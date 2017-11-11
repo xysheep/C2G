@@ -67,3 +67,4 @@ test_flowtype.R
 *.jpg
 *.pdf
 *.svg
+*.mat

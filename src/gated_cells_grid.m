@@ -39,7 +39,11 @@ for ignore_perc = [0.0 0.05 0.1 0.2 0.3]
                 boundariesx = boundaryx;
                 boundariesy = boundaryy;
             else
-                [boundariesx,boundariesy] = polybool('union',boundariesx,boundariesy,boundaryx,boundaryy);
+                try
+                    [boundariesx,boundariesy] = polybool('union',boundariesx,boundariesy,boundaryx,boundaryy);
+                catch
+                    1;
+                end
             end
         end
     end

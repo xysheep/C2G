@@ -86,7 +86,7 @@ total_cells = size(ungated_in_range,1);
 s = 0;
 for i = 1:length(sorted_freq_pattern)
     s = s + sorted_freq_pattern(i);
-    if s >= total_cells * pre_cluster_perc || sorted_freq_pattern(i)<20%(length(unique(l))-1)*size(data,2)
+    if s >= total_cells * pre_cluster_perc || i > 300 || sorted_freq_pattern(i)<20%(length(unique(l))-1)*size(data,2)
         break
     end
 end

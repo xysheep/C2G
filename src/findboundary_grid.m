@@ -43,8 +43,8 @@ else
     [~,end_idx] = max(xg);
     b = [xg(beg_idx) yg(beg_idx)];
     e = [xg(end_idx) yg(end_idx)];
-    boundaryx = [b(1)+0.5 e(1)+0.5 e(1)-0.5 b(1)-0.5]';
-    boundaryy = [b(2) e(2) e(2) b(2)]';
+    boundaryx = [b(1)+0.5 b(1)-0.5 e(1)-0.5 e(1)+0.5]';
+    boundaryy = [b(2) b(2) e(2) e(2)]';
 end   
 [boundaryx,boundaryy] = poly2cw(boundaryx,boundaryy);
 

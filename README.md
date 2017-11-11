@@ -4,6 +4,7 @@ Cluster-to-Gate is a tool developed to visualize clustering results of multi-dim
 Here is an example of how to run C2G: https://xysheep.github.io/C2G/. 
 
 Download newest version of C2G: https://github.com/xysheep/C2G/releases
+A pre-compiled executable for non-MATLAB is avaliable. Currently, the pre-compiled verion only supports default parameters. Before using the pre-compiled, you need to install the MATLAB Runtime avaliable at https://www.mathworks.com/products/compiler/matlab-runtime.html .
 
 ## Quick Start
 If you already have MATLAB installed on your computer you can try the quick start. Given you have one flow or mass cytometry data in fcs format and you want to visualize cell populations defined by kmeans, you can do it using the following code. In the transformation step, cofactor should be 5 for mass cytometry data and 100 for flow cytometry data.

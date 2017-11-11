@@ -1,4 +1,4 @@
-function [gated_labels,main_members,boundaries,flag,adj] = new_bestgate_grid(x,y,label,ori_label,ori_main_members,GRID_SIZE)
+function [gated_labels,main_members,boundaries,flag,adj] = new_bestgate_grid(x,y,label,ori_label,ori_main_members,GRID_SIZE,low_density)
 all_labels = unique(label);
 all_labels(all_labels==0 | histc(label,all_labels)<1) = [];
 ori_label(ori_label==0) = [];
@@ -30,7 +30,7 @@ end
 %% Overlap between different populations
 % Implement this part in C++/ vectorization 
 %[adj,all_labels] = pop_overlap(x,y,label,density,ig_ratio); 
-adj = pop_overlap_grid(numc); % The first column is ignored
+adj = pop_overlap_grid(numc,low_density); % The first column is ignored
 % figure;imagesc(adj1),figure;imagesc(adj);
 % figure;imagesc(mcl(adj1)),figure;imagesc(mcl(adj));
 %[adj,overlap,all_labels] = gaussian_pop_overlap(means,covs,label,d12); 

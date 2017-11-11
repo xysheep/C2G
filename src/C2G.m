@@ -31,6 +31,7 @@ addParameter(p,'showdetail',0.3,@islogical);
 addParameter(p,'grid_size',40,@isnumeric);
 addParameter(p,'randpair',false,@islogical);
 addParameter(p,'maxdepth',inf,@isnumeric);
+addParameter(p,'lowdensity',0,@isnumeric);
 parse(p,varargin{:});
 ratio_trivial_gate = p.Results.ratio_trivial_gate;
 trivial_gate = p.Results.trivial_gate;
@@ -40,7 +41,7 @@ showdetail = p.Results.showdetail;
 grid_size = p.Results.grid_size;
 randpair = p.Results.randpair;
 maxdepth = p.Results.maxdepth;
-
+low_density = p.Results.lowdensity;
 
 if ~isempty(markernames) && ~isempty(col)
     Fdemo = cell(0);
@@ -88,12 +89,12 @@ while ~queue.isempty()
         
         if randpair
             tmp_k = 0;
-            while tmp_k < 30
+            while tmp_k < 15
                 i = randi([1 n_markers - 1]);
                 j = randi([i+1 n_markers]);
                 [gatelabels,main_members,boundary,flag_seperate,~] = ...
                         new_bestgate_grid(sub_d(:,i),sub_d(:,j),...
-                        sub_l,unique(sub_ori_l),T.cell_label{node_id}, grid_size);
+                        sub_l,unique(sub_ori_l),T.cell_label{node_id}, grid_size,low_density);
                 n_gates = length(gatelabels);exclude_cells=0;
                 if n_gates ==1
                     current_pop = length(sub_l);
@@ -126,7 +127,7 @@ while ~queue.isempty()
 
                     [gatelabels,main_members,boundary,flag_seperate,over_matrix] = ...
                         new_bestgate_grid(sub_d(:,i),sub_d(:,j),...
-                        sub_l,unique(sub_ori_l),T.cell_label{node_id}, grid_size);
+                        sub_l,unique(sub_ori_l),T.cell_label{node_id}, grid_size,low_density);
 
                     entropy = new_entropy_gate(sub_ori_l,gatelabels);
 

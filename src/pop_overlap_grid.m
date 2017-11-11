@@ -1,5 +1,14 @@
-function adj = pop_overlap_grid(numc)
+function adj = pop_overlap_grid(numc,low_density)
 np = size(numc,2)-1;% Ignore first column (outliers)
+%ori_numc = numc;
+for i =2:size(numc,2)
+    [s,si] = sort(numc(:,i));
+    idx = find(cumsum(s) >= sum(s) * low_density + 1, 1);
+    idx = si(1:(idx-1)); 
+    if ~isempty(idx)
+        numc(idx,i) = 0;
+    end
+end
 adj = eye(np);
 for i = 1:np-1
     for j = i+1:np

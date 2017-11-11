@@ -55,6 +55,7 @@ Temporary Items
 # C2G related temp files and data
 manuscript/
 html/
+main/
 # Figures
 .pdf
 test.m
@@ -68,3 +69,4 @@ test_flowtype.R
 *.pdf
 *.svg
 *.mat
+*.prj

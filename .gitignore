@@ -56,6 +56,7 @@ Temporary Items
 manuscript/
 html/
 main/
+Complied/
 # Figures
 .pdf
 test.m
@@ -70,6 +71,7 @@ test_flowtype.R
 *.svg
 *.mat
 *.prj
+Complied/
 Complied/main.exe
 Complied/label.csv
 Complied/ctr.fcs

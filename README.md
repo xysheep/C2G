@@ -8,9 +8,9 @@ Download newest version of C2G: https://github.com/xysheep/C2G/releases
 A pre-compiled executable for non-MATLAB Windows user is avaliable since release (v1.1.0). Before using the pre-compiled, you need to install the MATLAB Runtime avaliable at https://www.mathworks.com/products/compiler/matlab-runtime.html.
 
 # Quick Start
-Here is a quick example. In this example, we set the 'outlier' to be 0.1 and 'trivial_gate' to be 200 on the example data.
+Here is a quick example. In this example, we set the 'outlier' to be 0.05 and 'trivial_gate' to be 50 on the example data.
 ```cmd
-C2G.exe data.csv label.csv outlier 0.1 trivial_gate 200
+C2G.exe data.csv label.csv outlier 0.05 trivial_gate 50
 ```
 # Usage of executables on Windows
 Download MATLAB Runtime at https://www.mathworks.com/products/compiler/matlab-runtime.html. Then you can directly run C2G on command line of Windows.

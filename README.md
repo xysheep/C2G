@@ -7,6 +7,11 @@ Download newest version of C2G: https://github.com/xysheep/C2G/releases
 
 A pre-compiled executable for non-MATLAB Windows user is avaliable since release (v1.1.0). Before using the pre-compiled, you need to install the MATLAB Runtime avaliable at https://www.mathworks.com/products/compiler/matlab-runtime.html.
 
+# Quick Start
+Here is a quick example. In this example, we set the 'outlier' to be 0.1 and 'trivial_gate' to be 200 on the example data.
+```cmd
+C2G.exe data.csv label.csv outlier 0.1 trivial_gate 200
+```
 # Usage of executables on Windows
 Download MATLAB Runtime at https://www.mathworks.com/products/compiler/matlab-runtime.html. Then you can directly run C2G on command line of Windows.
 ```cmd
@@ -22,10 +27,7 @@ C2G.exe datafile clusterfile [...options]
               of cells. Each row correspondong to one cell in datafile. 0
               means unlabeled.
 ## Optional Arguments
-C2G has the following parameter that you can tune according to the shape of your data. For executables, you don't need to care about which funcion each argument is used. For example, if your expect the 'outlier' to be 0.1 and 'trivial_gate' to be 200 on the example data, just run
-```cmd
-C2G.exe data.csv label.csv outlier 0.1 trivial_gate 200
-```
+C2G has the following parameter that you can tune according to the shape of your data. For executables, you don't need to care about which funcion each argument is used. 
 ### **Function** cluster_ungated
 #### **'pre_cluster_perc'** 
 Minimum percentage of unlabeled cells that should be pre-clustered. Default is 0.95. 

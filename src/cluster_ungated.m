@@ -1,4 +1,4 @@
-function [new_labels,f] = cluster_ungated(data,l,pre_cluster_perc,outliers_level,visualize)
+function [new_labels,f] = cluster_ungated(data,l,varargin)
 %% Function description
 % This function is used to cluster ungated cells based their overlap with
 % kown target populations. The returned cells labeled 0 in original labels
@@ -13,19 +13,13 @@ function [new_labels,f] = cluster_ungated(data,l,pre_cluster_perc,outliers_level
 %       with target populations. Default is 0.05.
 
 %% Address input parameters
-if ~exist('pre_cluster_perc','var')
-    pre_cluster_perc = 0.95;
-end
-if ~exist('outliers_level','var')
-    outliers_level = 0.05;
-end
 if sum(l==0)==0
     new_labels = l;
     return
 end
-if ~exist('visualize', 'var')
-    visualize = 0;
-end
+pnames = {'maximum_cluster', 'ignore_small_bin','cluster_amount','outliers','visualize'};
+dflts  = {300, 20, 0.95, 0.05, false};
+[maximum_cluster,small_bin, pre_cluster_perc,outliers_level,visualize] = internal.stats.parseArgs(pnames,dflts,varargin{:});
 %% Compute overlap for target population on each dimension
 % One cell is defined to be overlapped with one target population on
 % certain dimension if its intensity on that dimension is between maximum
@@ -86,7 +80,7 @@ total_cells = size(ungated_in_range,1);
 s = 0;
 for i = 1:length(sorted_freq_pattern)
     s = s + sorted_freq_pattern(i);
-    if s >= total_cells * pre_cluster_perc || i > 300 || sorted_freq_pattern(i)<20%(length(unique(l))-1)*size(data,2)
+    if s >= total_cells * pre_cluster_perc || i > maximum_cluster || sorted_freq_pattern(i)<small_bin%(length(unique(l))-1)*size(data,2)
         break
     end
 end

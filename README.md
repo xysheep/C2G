@@ -22,7 +22,10 @@ C2G.exe datafile clusterfile [...options]
               of cells. Each row correspondong to one cell in datafile. 0
               means unlabeled.
 ## Optional Arguments
-C2G has the following parameter that you can tune according to the shape of your data. 
+C2G has the following parameter that you can tune according to the shape of your data. For executables, you don't need to care about which funcion each argument is used. For example, if your expect the 'outlier' to be 0.1 and 'trivial_gate' to be 200 on the example data, just run
+```cmd
+C2G.exe data.csv label.csv outlier 0.1 trivial_gate 200
+```
 ### **Function** cluster_ungated
 #### **'pre_cluster_perc'** 
 Minimum percentage of unlabeled cells that should be pre-clustered. Default is 0.95. 

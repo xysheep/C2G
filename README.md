@@ -12,7 +12,7 @@ Download MATLAB Runtime at https://www.mathworks.com/products/compiler/matlab-ru
 ```cmd
 C2G.exe datafile clusterfile [...options]
 ```
-## Required Parameters
+## Required Arguments
       datafile: Path to a CSV file of data matrix. This file should have a
               n-by-m matrix without header. n is the number of cells and
               m is number of markers. This data should already be
@@ -21,7 +21,7 @@ C2G.exe datafile clusterfile [...options]
               should have a n-by-1 matrix without header. n is the number
               of cells. Each row correspondong to one cell in datafile. 0
               means unlabeled.
-## Optional Parameters
+## Optional Arguments
 C2G has the following parameter that you can tune according to the shape of your data. 
 ### **Function** cluster_ungated
 #### **'pre_cluster_perc'** 

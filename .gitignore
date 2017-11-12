@@ -72,8 +72,5 @@ test_flowtype.R
 *.mat
 *.prj
 Complied/
-Complied/main.exe
-Complied/label.csv
-Complied/ctr.fcs
-Complied/ctr.fcs
-Complied.zip
+data.csv
+label.csv

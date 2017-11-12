@@ -1,4 +1,4 @@
-function [T,Fdemo] = C2G(d,l,ori_l,varargin)%ig_ratio,markernames,col)
+function [T,Fdemo,markernames] = C2G(d,l,ori_l,varargin)%ig_ratio,markernames,col)
 % C2G perform the analysis return a gatingTree object that store the
 % obtained gating hierarchy.
 %       T = C2G(d,l,ori_l,...) "d" is the M-by-N data matrix where M is the
@@ -19,33 +19,11 @@ n_markers = size(d,2);
 % end
 % Initiate other parameters
 % ignore_ratio, markernames, and color is not used in new version. 
-% pnames = { 'ratio_trivial_gate', 'trivial_gate','markernames','color','showdetail', 'grid_size','randpair','maxdepth'};
-% dflts  = { 0.3, 50          ,cell(size(d,2),1)           ,[], true, 40, false, inf};
-% [ratio_trivial_gate, trivial_gate,markernames,col, showdetail, grid_size, randpair, maxdepth] = internal.stats.parseArgs(pnames,dflts,varargin{:});
-p = inputParser;
-addParameter(p,'ratio_trivial_gate',0.3,@isnumeric);
-addParameter(p,'trivial_gate',50,@isnumeric);
-addParameter(p,'markernames',cell(size(d,2),1),@iscell);
-addParameter(p,'color',[],@isnumeric);
-addParameter(p,'showdetail',0.3,@islogical);
-addParameter(p,'grid_size',40,@isnumeric);
-addParameter(p,'randpair',false,@islogical);
-addParameter(p,'maxdepth',inf,@isnumeric);
-addParameter(p,'lowdensity',0,@isnumeric);
-parse(p,varargin{:});
-ratio_trivial_gate = p.Results.ratio_trivial_gate;
-trivial_gate = p.Results.trivial_gate;
-markernames = p.Results.markernames;
-col = p.Results.color;
-showdetail = p.Results.showdetail;
-grid_size = p.Results.grid_size;
-randpair = p.Results.randpair;
-maxdepth = p.Results.maxdepth;
-low_density = p.Results.lowdensity;
+pnames = { 'ratio_trivial_gate', 'trivial_gate','markernames','color','showdetail', 'grid_size','randpair','maxdepth','outliers'};
+dflts  = { 0.3,50,cellfun(@(x) ['Marker ' num2str(x)],num2cell(1:size(d,2)),'UniformOutput',false),[], true, 40, false, inf, 0};
+[ratio_trivial_gate, trivial_gate,markernames,col, showdetail, grid_size, randpair, maxdepth,low_density] = internal.stats.parseArgs(pnames,dflts,varargin{:});
 
-if ~isempty(markernames) && ~isempty(col)
-    Fdemo = cell(0);
-end
+Fdemo = cell(0);
 %% Main part of C2G
 lsize = histc(ori_l, unique(ori_l));
 queue = CQueue();

@@ -7,33 +7,6 @@ Download newest version of C2G: https://github.com/xysheep/C2G/releases
 
 A pre-compiled executable for non-MATLAB Windows user is avaliable since release (v1.1.0). Before using the pre-compiled, you need to install the MATLAB Runtime avaliable at https://www.mathworks.com/products/compiler/matlab-runtime.html.
 
-# Quick Start
-If you already have MATLAB installed on your computer you can try the quick start. Given you have one flow or mass cytometry data in fcs format and you want to visualize cell populations defined by kmeans, you can do it using the following code. In the transformation step, cofactor should be 5 for mass cytometry data and 100 for flow cytometry data.
-```MATLAB
-[~,markers,~,~,compensated_data] = readfcs_v2(filename);
-% Transformation of the data. 
-transformed_data = flow_arcsinh(compensated_data, cofactor)';
-% Run k-means where k equal to 10
-label = kmeans(transformed_data, 10);
-% The main function of C2G
-m = C2G(transformed_data, label, label);
-% Visualize the gating hierarchy
-m.view_gates(transformed_data, markers);
-% See statistics of the results
-m.show_f_score(label);
-```
-Alternatively, if you start from a data matrix already loaded into MATLAB and have a clustering results defined by other programs, you can run C2G in the following way. Here, you data should be M-by-N matrix where M is number cells while N is number markers. The clustering label is stored in a N-by-1 vector. Clustering label can be any non-negative integers and 0 means unlabeled.  
-```MATLAB
-transformed_data = flow_arcsinh(data, cofactor);
-% Pre-cluster the unlabeled cells
-newlabel = cluster_ungated(data,label);
-% The main function of C2G
-m = C2G(transformed_data, newlabel, label);
-% Visualize the gating hierarchy
-m.view_gates(transformed_data);
-% See statistics of the results
-m.show_f_score(label);
-```
 # Usage of executables on Windows
 Download MATLAB Runtime at https://www.mathworks.com/products/compiler/matlab-runtime.html. Then you can directly run C2G on command line of Windows.
 ```cmd
@@ -85,3 +58,33 @@ This is a threshold. When a node has only one gate and this gate fail to separat
 
 #### **'onepanel'** 
 Whether the gating tree is present in the same panel of the gating sequences. Default is false. 
+
+
+
+# Use source code of C2G
+If you already have MATLAB installed on your computer you can try the quick start. Given you have one flow or mass cytometry data in fcs format and you want to visualize cell populations defined by kmeans, you can do it using the following code. In the transformation step, cofactor should be 5 for mass cytometry data and 100 for flow cytometry data.
+```MATLAB
+[~,markers,~,~,compensated_data] = readfcs_v2(filename);
+% Transformation of the data. 
+transformed_data = flow_arcsinh(compensated_data, cofactor)';
+% Run k-means where k equal to 10
+label = kmeans(transformed_data, 10);
+% The main function of C2G
+m = C2G(transformed_data, label, label);
+% Visualize the gating hierarchy
+m.view_gates(transformed_data, markers);
+% See statistics of the results
+m.show_f_score(label);
+```
+Alternatively, if you start from a data matrix already loaded into MATLAB and have a clustering results defined by other programs, you can run C2G in the following way. Here, you data should be M-by-N matrix where M is number cells while N is number markers. The clustering label is stored in a N-by-1 vector. Clustering label can be any non-negative integers and 0 means unlabeled.  
+```MATLAB
+transformed_data = flow_arcsinh(data, cofactor);
+% Pre-cluster the unlabeled cells
+newlabel = cluster_ungated(data,label);
+% The main function of C2G
+m = C2G(transformed_data, newlabel, label);
+% Visualize the gating hierarchy
+m.view_gates(transformed_data);
+% See statistics of the results
+m.show_f_score(label);
+```

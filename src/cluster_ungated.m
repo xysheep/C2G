@@ -1,4 +1,4 @@
-function [new_labels,f] = cluster_ungated(data,l,varargin)
+function new_labels = cluster_ungated(data,l,varargin)
 %% Function description
 % This function is used to cluster ungated cells based their overlap with
 % kown target populations. The returned cells labeled 0 in original labels

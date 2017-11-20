@@ -71,7 +71,7 @@ test_flowtype.R
 *.svg
 *.mat
 *.prj
-Complied/
+build/
 data.csv
 label.csv
 testCytometryA.m

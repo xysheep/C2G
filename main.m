@@ -29,7 +29,7 @@ end
 d = csvread(datafile);  
 l = csvread(clusterfile);
 if size(d,1) ~= length(l)
-    fprintf("Data and labels have differnt number of cells\n");
+    fprintf('Data and labels have differnt number of cells\n');
     return;
 end
 numoption = {'maximum_cluster', 'ignore_small_bin','cluster_amount','outliers','visualize','ratio_trivial_gate', 'trivial_gate', 'grid_size','randpair','maxdepth','outliers','fontsize','n_lines','ignore_small','onepanel'};

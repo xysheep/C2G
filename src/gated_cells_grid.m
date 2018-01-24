@@ -19,16 +19,27 @@ best_idx = [];
 best_boundary = 0;
 x = mod(grid,100);
 y = floor(grid/100);
-for ignore_perc = [0.0 0.05 0.1 0.2 0.3]
+percs = [0.0 0.05 0.1 0.2 0.3];
+for ignore_perc = percs
     idx_cell = cell(length(target_labels),1);
     boundariesx = [];
     boundariesy = [];
     for i = 1:length(target_labels)
-        [s,si] = sort(numc(:,1+target_labels(i)));
-        idx = find(cumsum(s)>=sum(s)*ignore_perc + 1,1);
-        idx = si(idx:end); 
-        if isempty(idx)
-            idx = si(end);
+        n_cell = sum(numc(:,1+target_labels(i)));
+        if ( n_cell > 20) && ignore_perc >= 0.05
+            [s,si] = sort(numc(:,1+target_labels(i)));
+            idx = find(cumsum(s)>=sum(s)*ignore_perc + 1,1);
+            idx = si(idx:end); 
+            if isempty(idx)
+                idx = si(end);
+            end
+        else
+            [s,si] = sort(numc(:,1+target_labels(i)));
+            idx = find(cumsum(s)>=0 + 1,1);
+            idx = si(idx:end); 
+            if isempty(idx)
+                idx = si(end);
+            end
         end
         xg = x(idx);
         yg = y(idx);
@@ -48,7 +59,7 @@ for ignore_perc = [0.0 0.05 0.1 0.2 0.3]
         end
     end
     gated_idx = unique(cell2mat(idx_cell));
-    
+
     f_score = fscore_grid(numc,target_labels,gated_idx);
     if f_score > max_fscore
         max_fscore = f_score;

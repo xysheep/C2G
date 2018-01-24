@@ -161,6 +161,8 @@ classdef gatingTree < handle
                 %disp(obj.dimpair{n_id})
                 i = obj.dimpair{n_id}(1);j = obj.dimpair{n_id}(2);
                 scatplot(sub_d(:,i),sub_d(:,j),'gd',[],100,5,1,4);
+                % Cytobank_contour2D(sub_d(:,i),sub_d(:,j), 10);
+                % axis([min(sub_d(:,i))-0.01 max(sub_d(:,i))+0.01 min(sub_d(:,j))-0.01 max(sub_d(:,j))+0.01])
                 xlabel(markers{i},'FontSize',fontsize);
                 ylabel(markers{j},'FontSize',fontsize);
                 hold on
@@ -170,7 +172,64 @@ classdef gatingTree < handle
                     boundaryx = obj.boundary{g_id}(:,1);
                     boundaryy = obj.boundary{g_id}(:,2);
                     plot(boundaryx,boundaryy,'r','LineWidth',2);
-                    t=text(mean(boundaryx),mean(boundaryy),sprintf('Node %d',g_id),'HorizontalAlignment','center');
+                    sub_d = data(obj.cell_idx{g_id},:);
+                    t=text(mean(sub_d(:,i)),mean(sub_d(:,j)),sprintf('Node %d',g_id),'HorizontalAlignment','center');
+                    t.FontSize = fontsize;
+                    t.FontWeight = 'bold';
+                end
+            end
+            %subplot(n_lines,ceil((1+length(node_to_show))/n_lines),length(node_to_show)+1);
+            if onepanel
+                subplot(n_lines,ceil((length(node_to_show)+onepanel)/n_lines),n_i+1);
+            else
+                figure('Position',[100,100,640,640])
+            end
+            obj.plottree()
+        end
+        function view_gates_contour(obj,data,markers,varargin)
+            pnames = {'fontsize','n_lines','ignore_small','onepanel'};
+            dflts = {20, 3, 100, false};
+            [fontsize, n_lines, ignore_small, onepanel] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+            if isempty(markers)
+                markers =  strread(num2str(1:size(data,2)),'%s');
+            end
+            node_to_show = find(~cellfun(@isempty,obj.dimpair));
+            num_gates = histc(obj.parents,node_to_show);
+            idx = false(size(node_to_show));
+            idx( num_gates > 1) = true;
+            parentNum = cellfun(@length,obj.cell_idx(node_to_show));
+            childNum = cellfun(@length,...
+                obj.cell_idx(arrayfun(@(x)find(obj.parents == x,1),node_to_show)));
+            idx( num_gates == 1 & (parentNum > ignore_small + childNum)) = true;
+            node_to_show = node_to_show(idx);
+            figure;
+            set(gcf,'Position',[50,50,320*ceil((length(node_to_show)+onepanel)/n_lines),320*n_lines])
+            for n_i = 1:length(node_to_show)
+                subplot(n_lines,ceil((length(node_to_show)+onepanel)/n_lines),n_i);
+                hold on
+                n_id = node_to_show(n_i);
+                %disp(obj.dimpair{n_id})
+                i = obj.dimpair{n_id}(1);j = obj.dimpair{n_id}(2);
+                % scatplot(sub_d(:,i),sub_d(:,j),'gd',[],100,5,1,4);
+                children = find(obj.parents==n_id);
+                colors = hsv(length(children));
+                outidx = obj.cell_idx{n_id};
+                for c_i = 1:length(children) 
+                    sub_d = data(obj.cell_idx{children(c_i)},:);
+                    contour2D(sub_d(:,i),sub_d(:,j), 20, colors(c_i,:));
+                    outidx(ismember(outidx, obj.cell_idx{children(c_i)})) = [];
+                end
+                sub_d = data(outidx,:);
+                scatter(sub_d(:,i),sub_d(:,j),1,[0.5 0.5 0.5]);
+                sub_d = data(obj.cell_idx{n_id},:);
+                axis([min(sub_d(:,i))-0.01 max(sub_d(:,i))+0.01 min(sub_d(:,j))-0.01 max(sub_d(:,j))+0.01])
+                xlabel(markers{i},'FontSize',fontsize);
+                ylabel(markers{j},'FontSize',fontsize);
+                
+                for g_id = children
+                    %disp(g_id)
+                    sub_d = data(obj.cell_idx{g_id},:);
+                    t=text(mean(sub_d(:,i)),mean(sub_d(:,j)),sprintf('Node %d',g_id),'HorizontalAlignment','center');
                     t.FontSize = fontsize;
                     t.FontWeight = 'bold';
                 end

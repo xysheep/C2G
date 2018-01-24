@@ -75,3 +75,14 @@ build/
 data.csv
 label.csv
 testCytometryA.m
+
+testdata/rare population/X-shift-label.csv
+testdata/rare population/X-shift.csv
+vortex*
+testdata/swift/
+testdata/rare population/Untitled.ipynb
+testdata/rare population/.ipynb_checkpoints/Untitled-checkpoint.ipynb
+testdata/rare population/Mosmann_rare_X_shift.csv
+testdata/rare population/Mosmann_label.csv
+testdata/rare population/108.csv
+testdata/rare population/108.fcs

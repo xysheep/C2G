@@ -26,6 +26,8 @@ if ~exist('datafile','var') || ~exist('clusterfile','var')
 '          Details of optional arguments are avaliable at https://github.com/xysheep/C2G\n'])
     return
 end
+
+
 d = csvread(datafile);  
 l = csvread(clusterfile);
 if size(d,1) ~= length(l)
@@ -57,7 +59,17 @@ for i = 1:2:size(varargin,2)
     end
 end
 
+pnames = { 'cofactor'};
+dflts  = { 0};
+[cofact] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+if ischar(cofact)
+    cofact = str2double(cofact);
+end
+if cofact > 0
+    d = flow_arcsinh(d', cofact)';
+end
 label = cluster_ungated(d,l,precvar{:});
 [m,~,markernames] = C2G(d, label, l, c2gvar{:});
 m.view_gates(d, markernames,  viewvar{:});
+m.view_gates_contour(d, markernames,  viewvar{:});
 m.show_f_score(l);

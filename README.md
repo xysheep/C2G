@@ -28,6 +28,9 @@ C2G.exe datafile clusterfile [...options]
               means unlabeled.
 ## Optional Arguments
 C2G has the following parameter that you can tune according to the shape of your data. For executables, you don't need to care about which funcion each argument is used. 
+### ** Argument for compiled version **
+#### **'cofactor'**
+Argument used in hyperbolic arcsine transformation. It's recommended to be 5 for mass cytometry data and 100 for flow cytometry data. If this argument is 0, no transformation will be performed. Default is 0. 
 ### **Function** cluster_ungated
 #### **'pre_cluster_perc'** 
 Minimum percentage of unlabeled cells that should be pre-clustered. Default is 0.95. 

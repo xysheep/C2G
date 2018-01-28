@@ -5,12 +5,16 @@ Here is an example of how to run C2G with source code: https://xysheep.github.io
 
 Download newest version of C2G: https://github.com/xysheep/C2G/releases
 
-A pre-compiled executable for non-MATLAB Windows user is avaliable since release (v1.1.0). Before using the pre-compiled, you need to install the MATLAB Runtime 9.2 (or above)avaliable at https://www.mathworks.com/products/compiler/matlab-runtime.html.
+A pre-compiled executable for non-MATLAB Windows user is avaliable since release (v1.1.0). Before using the pre-compiled, you need to install the MATLAB Runtime 9.2 avaliable at https://www.mathworks.com/products/compiler/matlab-runtime.html.
 
 # Quick Start
-Here is a quick example. In this example, we set the 'outlier' to be 0.05 and 'trivial_gate' to be 50 on the example data.
+Here is a quick example. In this example, we set the 'outlier' to be 0.05 and 'trivial_gate' to be 50 on the example data. In this example, the data.csv is already transformed.
 ```cmd
 C2G.exe data.csv label.csv outlier 0.05 trivial_gate 50
+```
+If the data is not transformed, you also set the "cofactor" option to make C2G transform the data. For mass cytometry, it's recommended to be 5. For flow cytometry, it's recommended to be 100.  
+```cmd
+C2G.exe data.csv label.csv cofactor 5
 ```
 # Usage of executables on Windows
 Download MATLAB Runtime at https://www.mathworks.com/products/compiler/matlab-runtime.html. Then you can directly run C2G on command line of Windows.
@@ -28,6 +32,9 @@ C2G.exe datafile clusterfile [...options]
               means unlabeled.
 ## Optional Arguments
 C2G has the following parameter that you can tune according to the shape of your data. For executables, you don't need to care about which funcion each argument is used. 
+### **Argument for compiled version**
+#### **'cofactor'**
+Argument used in hyperbolic arcsine transformation. It's recommended to be 5 for mass cytometry data and 100 for flow cytometry data. If this argument is 0, no transformation will be performed. Default is 0. 
 ### **Function** cluster_ungated
 #### **'pre_cluster_perc'** 
 Minimum percentage of unlabeled cells that should be pre-clustered. Default is 0.95. 

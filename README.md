@@ -12,7 +12,7 @@ Here is a quick example. In this example, we set the 'outlier' to be 0.05 and 't
 ```cmd
 C2G.exe data.csv label.csv outlier 0.05 trivial_gate 50
 ```
-If the data is not transformed, you also set the "cofactor" option to make C2G transform the data. For mass cytometry, it's recommended to be 5. For flow cytometry, it's recommended to be 100.  
+**If your data is not transformed**, you also set the "cofactor" option to make C2G transform the data. For mass cytometry, it's recommended to be 5. For flow cytometry, it's recommended to be 100.  
 ```cmd
 C2G.exe data.csv label.csv cofactor 5
 ```

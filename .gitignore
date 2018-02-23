@@ -74,7 +74,6 @@ test_flowtype.R
 build/
 data.csv
 label.csv
-testCytometryA.m
 
 testdata/rare population/X-shift-label.csv
 testdata/rare population/X-shift.csv

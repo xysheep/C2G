@@ -38,9 +38,11 @@ numoption = {'maximum_cluster', 'ignore_small_bin','cluster_amount','outliers','
 c2g_option = { 'ratio_trivial_gate', 'trivial_gate','markernames','color','showdetail', 'grid_size','randpair','maxdepth','outliers'};
 viewgates_option = {'fontsize','n_lines','ignore_small','onepanel'};
 precluster_option = {'maximum_cluster', 'ignore_small_bin','cluster_amount','outliers','visualize'};
+main_option = {'cofactor'};
 c2gvar = cell(0);
 viewvar = cell(0);
 precvar = cell(0);
+mainvar = cell(0);
 for i = 1:2:size(varargin,2)
     if ismember(varargin{i}, numoption) && ischar(varargin{i+1})
         varargin{i+1} = str2double(varargin{i+1});
@@ -57,11 +59,15 @@ for i = 1:2:size(varargin,2)
         precvar{end+1} = varargin{i};
         precvar{end+1} = varargin{i+1};
     end
+    if ismember(varargin{i}, main_option)
+        mainvar{end+1} = varargin{i};
+        mainvar{end+1} = varargin{i+1};
+    end
 end
 
 pnames = { 'cofactor'};
 dflts  = { 0};
-[cofact] = internal.stats.parseArgs(pnames,dflts,varargin{:});
+[cofact] = internal.stats.parseArgs(pnames,dflts,mainvar{:});
 if ischar(cofact)
     cofact = str2double(cofact);
 end

@@ -208,6 +208,7 @@ classdef gatingTree < handle
                 subplot(n_lines,ceil((length(node_to_show)+onepanel)/n_lines),n_i);
                 hold on
                 n_id = node_to_show(n_i);
+                title(sprintf('Node %d',n_id),'FontSize',fontsize);
                 %disp(obj.dimpair{n_id})
                 i = obj.dimpair{n_id}(1);j = obj.dimpair{n_id}(2);
                 % scatplot(sub_d(:,i),sub_d(:,j),'gd',[],100,5,1,4);

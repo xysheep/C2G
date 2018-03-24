@@ -1,11 +1,11 @@
 # Cluster-to-Gate(C2G)
 Cluster-to-Gate is a tool developed to visualize clustering results of multi-dimensional flow/mass cytometry data. 
 
-Here is an example of how to run C2G with source code: https://xysheep.github.io/C2G/. 
+**Download** newest version of C2G: https://github.com/xysheep/C2G/releases. 
 
-Download newest version of C2G: https://github.com/xysheep/C2G/releases
+Here is an example of how to run C2G with **source code**: https://xysheep.github.io/C2G/. The testing data in this demonstration page comes from https://www.c2b2.columbia.edu/danapeerlab/html/dremi-data.html and https://community.cytobank.org/cytobank/experiments/60068. 
 
-A pre-compiled executable for non-MATLAB Windows user is avaliable since release (v1.1.0). Before using the pre-compiled, you need to install the MATLAB Runtime 9.2 avaliable at https://www.mathworks.com/products/compiler/matlab-runtime.html.
+A **pre-compiled executable** for non-MATLAB Windows user is avaliable since release (v1.1.0). Before using the pre-compiled, you need to install the MATLAB Runtime 9.2 avaliable at https://www.mathworks.com/products/compiler/matlab-runtime.html. 
 
 # Quick Start
 Here is a quick example. In this example, we set the 'outlier' to be 0.05 and 'trivial_gate' to be 50 on the example data. In this example, the data.csv is already transformed.
